@@ -2,6 +2,8 @@ import React, { useRef, useState, useCallback, useEffect } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
+import SidePanel from './SidePanel';
+import './SidePanel.css';
 import { useAtom, useSetAtom } from 'jotai'
 import { codeStreamingAtom } from '../../atoms/codeStreaming'
 import useHotkeyEvent from "../../hooks/useHotkeyEvent"
@@ -25,6 +27,7 @@ const ChatWindow = () => {
   const { chatId } = useParams()
   const location = useLocation()
   const [messages, setMessages] = useState<Message[]>([])
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
   const currentId = useRef(0)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const currentChatId = useRef<string | null>(null)
@@ -193,7 +196,7 @@ const ChatWindow = () => {
         prevMessages = newMessages[messageIndex + 1]
         prevMessages.text = ""
         prevMessages.isError = false
-        newMessages = newMessages.slice(0, messageIndex+1)
+        newMessages = newMessages.slice(0, messageIndex + 1)
       }
       return newMessages
     })
@@ -282,7 +285,7 @@ const ChatWindow = () => {
               case "tool_calls":
                 const toolCalls = data.content as ToolCall[]
 
-                const tools = data.content?.map((call: {name: string}) => call.name) || []
+                const tools = data.content?.map((call: { name: string }) => call.name) || []
                 toolResultTotal.current = tools.length
 
                 const uniqTools = new Set(tools)
@@ -327,10 +330,10 @@ const ChatWindow = () => {
               case "message_info":
                 setMessages(prev => {
                   const newMessages = [...prev]
-                  if(data.content.userMessageId) {
+                  if (data.content.userMessageId) {
                     newMessages[newMessages.length - 2].id = data.content.userMessageId
                   }
-                  if(data.content.assistantMessageId) {
+                  if (data.content.assistantMessageId) {
                     newMessages[newMessages.length - 1].id = data.content.assistantMessageId
                   }
                   return newMessages
@@ -407,8 +410,16 @@ const ChatWindow = () => {
     lastChatId.current = chatId
   }, [updateStreamingCode, chatId])
 
+  const togglePanel = () => {
+    setIsPanelOpen(!isPanelOpen)
+  }
+
   return (
-    <div className="chat-page">
+    <div className={`chat-page ${isPanelOpen ? 'panel-open' : ''}`}>
+      <button className="panel-toggle-button" onClick={togglePanel}>
+        {isPanelOpen ? '>' : '<'}
+      </button>
+
       <div className="chat-container">
         <div className="chat-window">
           <ChatMessages
@@ -424,6 +435,8 @@ const ChatWindow = () => {
           />
         </div>
       </div>
+
+      <SidePanel isOpen={isPanelOpen} onClose={togglePanel} />
     </div>
   )
 }
