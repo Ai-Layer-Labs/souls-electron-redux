@@ -1,0 +1,22 @@
+/* Light theme (default) */
+pre {
+  background-color: rgba(var(--color-bg-surface-2), var(--tw-bg-opacity)) !important;
+}
+
+pre.dark {
+  background-color: rgba(var(--color-bg-surface-3), var(--tw-bg-opacity)) !important;
+}
+
+/* Override highlight.js theme colors */
+:root[data-theme='light'] pre {
+  background-color: #fafafa !important;
+}
+
+:root[data-theme='dark'] pre {
+  background-color: #282c34 !important;
+}
+
+/* Ensure code text is visible in both themes */
+pre code {
+  color: rgba(var(--color-text-base), var(--tw-text-opacity));
+}
