@@ -69,6 +69,8 @@
     "@radix-ui/react-tooltip": "^1.1.7",
     "@tldraw/tldraw": "^3.11.1",
     "@uiw/react-codemirror": "^4.23.8",
+    "@react-three/drei": "^9.80.1",
+    "@react-three/fiber": "^8.13.6",
     "axios": "^1.7.9",
     "better-sqlite3": "^11.8.0",
     "cross-spawn": "^7.0.6",
@@ -111,7 +113,8 @@
     "sharp": "^0.33.5",
     "winston": "^3.17.0",
     "zod": "^3.24.1",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "three": "^0.175.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

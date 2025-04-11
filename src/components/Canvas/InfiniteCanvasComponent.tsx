@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Tldraw, useEditor, TLDocument, TLShape, TLEditorSnapshot, TLTextShape, Editor, createShapeId } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
-import { CanvasContentData } from 'stores/useCanvasStore';
-import useChatStore from 'stores/useChatStore';
-import useCanvasStore from 'stores/useCanvasStore';
+// import { CanvasContentData } from './CanvasStore'; // No longer directly needed for chat data
+import { useAtomValue } from 'jotai'; // Import Jotai hook
+import { currentChatIdAtom } from '../../atoms/chatState'; // Import Jotai atom
+import useCanvasStore from './CanvasStore';
 import { debounce } from 'lodash';
 
 interface InfiniteCanvasComponentProps {
@@ -12,49 +13,44 @@ interface InfiniteCanvasComponentProps {
 }
 
 const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ data }*/) => {
-  const currentChat = useChatStore((state) => state.chat);
-  const updateCanvasData = useChatStore((state) => state.updateCanvasData);
-  const contentData = useCanvasStore((state) => state.contentData);
+  const currentChatId = useAtomValue(currentChatIdAtom); // Use Jotai atom for chat ID
+  // const updateCanvasData = useChatStore((state) => state.updateCanvasData); // Remove Zustand hook
+  const contentData = useCanvasStore((state) => state.contentData); // Keep this for dropped content
   const [persistenceKey, setPersistenceKey] = useState<string>('tldraw-temp'); // Default key for temp chat
-  const [initialSnapshot, setInitialSnapshot] = useState<TLEditorSnapshot | undefined>(undefined);
+  // const [initialSnapshot, setInitialSnapshot] = useState<TLEditorSnapshot | undefined>(undefined); // Let tldraw handle initial loading
   const editorRef = useRef<Editor | null>(null); // Updated type to Editor
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
-  // Set persistence key and load initial data when chat changes
+  // Set persistence key when chat ID changes
   useEffect(() => {
-    const key = currentChat.id ? `tldraw-chat-${currentChat.id}` : 'tldraw-temp';
+    const key = currentChatId ? `tldraw-chat-${currentChatId}` : 'tldraw-temp';
     setPersistenceKey(key);
 
-    // Load initial document from store if available
-    if (currentChat.canvasData) {
-      try {
-        const parsedData = JSON.parse(currentChat.canvasData);
-        // Validate snapshot structure (basic check for store)
-        if (parsedData && parsedData.store) {
-            setInitialSnapshot(parsedData as TLEditorSnapshot);
-        } else {
-            console.warn('Invalid canvas snapshot found in store, starting fresh.');
-            setInitialSnapshot(undefined);
-        }
-      } catch (e) {
-        console.error('Failed to parse canvas snapshot:', e);
-        setInitialSnapshot(undefined);
-      }
-    } else {
-      setInitialSnapshot(undefined); // No data, start fresh
-    }
+    // Remove initial snapshot loading logic - tldraw handles this via persistenceKey/snapshot props
+    // if (currentChat.canvasData) {
+    //   try {
+    //     const parsedData = JSON.parse(currentChat.canvasData);
+    //     if (parsedData && parsedData.store) {
+    //         setInitialSnapshot(parsedData as TLEditorSnapshot);
+    //     } else {
+    //         console.warn('Invalid canvas snapshot found in store, starting fresh.');
+    //         setInitialSnapshot(undefined);
+    //     }
+    //   } catch (e) {
+    //     console.error('Failed to parse canvas snapshot:', e);
+    //     setInitialSnapshot(undefined);
+    //   }
+    // } else {
+    //   setInitialSnapshot(undefined); // No data, start fresh
+    // }
 
-    // Reset editor state when chat changes to force reload with new document/key
-    // This might depend on how Tldraw handles key changes internally.
-    // If direct key change doesn't reload document, more forceful reset might be needed.
-
-  }, [currentChat.id, currentChat.canvasData]); // Depend on chat ID and the data itself
+  }, [currentChatId]); // Depend only on chat ID
 
   // Handle dropped text when contentData changes
   useEffect(() => {
     if (editorRef.current && contentData.droppedText && contentData.timestamp) {
       const editor = editorRef.current;
-      
+
       // Get the center of the viewport
       const { width, height } = editor.getViewportPageBounds();
       const point = {
@@ -79,16 +75,20 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
     }
   }, [contentData.droppedText, contentData.timestamp]);
 
-  // Debounced function to save canvas data
+  // Debounced function - no longer needs to explicitly save if relying on tldraw persistence
   const debouncedSave = useCallback(
-    debounce((editor: any) => {
-      if (currentChat.id) { // Only save for non-temp chats
-        const snapshot = editor.getSnapshot();
-        // console.log('Saving canvas snapshot for:', currentChat.id);
-        updateCanvasData(currentChat.id, JSON.stringify(snapshot));
-      }
-    }, 1000), // Save 1 second after the last change
-    [currentChat.id, updateCanvasData] // Dependencies for useCallback
+    debounce((editor: Editor) => {
+      // tldraw automatically persists changes to localStorage based on persistenceKey
+      // No need to call updateCanvasData here if backend persistence isn't implemented
+      // if (currentChatId) { // Only save for non-temp chats
+      //   const snapshot = editor.getSnapshot();
+      //   // console.log('Saving canvas snapshot via tldraw persistence for:', currentChatId);
+      //   // updateCanvasData(currentChatId, JSON.stringify(snapshot)); // Remove this call
+      // }
+      // console.log('Change detected, tldraw should persist for key:', persistenceKey);
+    }, 1000), // Debounce interval might still be useful for logging or future extensions
+    [persistenceKey] // Depend on persistenceKey to log correctly if needed
+    // [currentChatId] // Original dependency was currentChat.id and updateCanvasData
   );
 
   // Callback for when the editor mounts
@@ -108,7 +108,7 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
 
       // Create a sticky note
       editor.mark('creating sticky note');
-      
+
       const id = createShapeId();
       editor.createShape({
         id,
@@ -152,14 +152,14 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
   }, [debouncedSave]);
 
   // Use a key prop on Tldraw to force re-mount when chat ID changes
-  const tldrawKey = currentChat.id || 'temp';
+  const tldrawKey = currentChatId || 'temp';
 
   return (
     <div className="w-full h-full">
       <Tldraw
-        key={tldrawKey}
-        persistenceKey={persistenceKey}
-        snapshot={initialSnapshot}
+        key={tldrawKey} // Force re-mount on chat change
+        persistenceKey={persistenceKey} // Let tldraw handle load/save via this key
+        // snapshot={initialSnapshot} // Remove explicit snapshot, let tldraw load from persistenceKey
         onMount={handleMount}
         autoFocus
       />
@@ -167,4 +167,4 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
   );
 };
 
-export default InfiniteCanvasComponent; 
+export default InfiniteCanvasComponent;

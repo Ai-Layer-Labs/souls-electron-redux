@@ -1,13 +1,11 @@
 import React from 'react';
-import { CanvasContentData } from 'stores/useCanvasStore';
-import useAppearanceStore from 'stores/useAppearanceStore';
+import { CanvasContentData } from './CanvasStore';
 
 interface ImageComponentProps {
   data: CanvasContentData;
 }
 
 const ImageComponent: React.FC<ImageComponentProps> = ({ data }) => {
-  const theme = useAppearanceStore((state) => state.theme);
 
   if (!data.src) {
     return (

@@ -1,13 +1,11 @@
 import React from 'react';
-import { CanvasContentData } from 'stores/useCanvasStore';
-import useAppearanceStore from 'stores/useAppearanceStore';
+import { CanvasContentData } from './CanvasStore';
 
 interface MapComponentProps {
   data: CanvasContentData;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({ data }) => {
-  const theme = useAppearanceStore((state) => state.theme);
   const position = data.position || [0, 0];
   const zoom = data.zoom || 13;
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CanvasContentData } from 'stores/useCanvasStore';
-import useAppearanceStore from 'stores/useAppearanceStore';
+import { CanvasContentData } from './CanvasStore';
 
 interface TerminalComponentProps {
   data: CanvasContentData;
@@ -12,7 +11,6 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ data }) => {
   const [currentCommand, setCurrentCommand] = useState('');
   const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
   const promptText = data.terminalOptions?.prompt || '$ ';
-  const theme = useAppearanceStore((state) => state.theme);
 
   // Handle initial text
   useEffect(() => {
@@ -105,24 +103,20 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({ data }) => {
 
   return (
     <div className="w-full h-full p-4 bg-[rgba(var(--color-bg-surface-1),var(--tw-bg-opacity))]">
-      <div className={`font-mono p-4 rounded-lg shadow-md h-full overflow-auto border border-[rgba(var(--color-border),var(--tw-border-opacity))] ${theme === 'dark'
-        ? 'bg-[#1a1a1a] text-gray-200'
-        : 'bg-[#f5f5f5] text-gray-800'
-        }`}>
+      <div className="font-mono p-4 rounded-lg shadow-md h-full overflow-auto border border-[rgba(var(--color-border),var(--tw-border-opacity))] dark:bg-[#1a1a1a] text-gray-200 bg-[#f5f5f5] text-gray-800">
         <div className="mb-4">
           {terminalOutput.map((line, index) => (
             <div key={index} className="whitespace-pre-wrap">{line}</div>
           ))}
         </div>
         <div className="flex items-center">
-          <span className={theme === 'dark' ? 'text-green-400' : 'text-green-600'}>{promptText}</span>
+          <span className={'dark:text-green-400 text-green-600'}>{promptText}</span>
           <input
             type="text"
             value={currentCommand}
             onChange={(e) => setCurrentCommand(e.target.value)}
             onKeyDown={handleKeyDown}
-            className={`flex-1 bg-transparent border-none outline-none focus:ring-0 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-              }`}
+            className={`flex-1 bg-transparent border-none outline-none focus:ring-0 dark:text-gray-200 text-gray-800`}
             autoFocus
           />
         </div>
