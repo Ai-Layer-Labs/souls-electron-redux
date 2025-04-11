@@ -1,6 +1,6 @@
 {
   "header": {
-    "title": "Dive AI"
+    "title": "Souls"
   },
   "chat": {
     "placeholder": "Escribe un mensaje...",
@@ -33,7 +33,7 @@
     "dragFiles": "Arrastra archivos aquí para agregar a la conversación"
   },
   "welcome": {
-    "title": "Bienvenido a Dive AI",
+    "title": "Bienvenido a Souls",
     "subtitle": "Inicia tu conversación con IA",
     "startChat": "Iniciar Chat"
   },

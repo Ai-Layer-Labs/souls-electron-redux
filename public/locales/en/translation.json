@@ -1,6 +1,6 @@
 {
   "header": {
-    "title": "Dive AI"
+    "title": "Souls"
   },
   "chat": {
     "placeholder": "Send any message...",
@@ -33,8 +33,8 @@
     "dragFiles": "Drop files here to add to chat"
   },
   "welcome": {
-    "title": "Welcome to Dive AI",
-    "subtitle": "Start your AI conversation",
+    "title": "Welcome to Souls",
+    "subtitle": "Powered by THINK",
     "startChat": "Start Chat"
   },
   "setup": {
@@ -56,14 +56,18 @@
     "temperatureDescription": "Temperature parameter controls response randomness. A value of 0 uses the default value; lower values produce more precise and stable responses; higher values generate more creative but less rigorous responses."
   },
   "sidebar": {
-    "tools": "Tools Management(MCP)",
+    "home": "Home",
+    "knowledge": "Knowledge",
+    "personas": "Personas",
+    "storage": "Storage",
+    "tools": "Tools",
     "settings": "Model Settings",
     "update": "Update available",
     "models": "Model Settings",
     "system": "System Settings"
   },
   "tools": {
-    "title": "Tools Management(MCP)",
+    "title": "Tools",
     "subtitle": "Tools and settings for MCP Server",
     "editConfig": "Edit Config",
     "editConfig.alt": "Edit MCP Server Configuration",
@@ -167,7 +171,7 @@
     "theme": "Display Mode",
     "defaultInstructions": "speak in English",
     "autoDownload": "Auto Download Update",
-    "autoLaunch": "Run Dive AI on System Startup",
+    "autoLaunch": "Run Souls on System Startup",
     "minimalToTray": "Minimize to System Tray"
   },
   "toast": {

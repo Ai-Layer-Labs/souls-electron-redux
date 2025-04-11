@@ -1,6 +1,6 @@
 {
   "header": {
-    "title": "Dive AI"
+    "title": "Souls"
   },
   "chat": {
     "placeholder": "傳送任何訊息...",
@@ -33,7 +33,7 @@
     "dragFiles": "拖放文件到此處以添加到對話"
   },
   "welcome": {
-    "title": "歡迎使用 Dive AI",
+    "title": "歡迎使用 Souls",
     "subtitle": "開始你的 AI 對話",
     "startChat": "開始對話"
   },
@@ -167,8 +167,8 @@
     "theme": "顯示模式",
     "defaultInstructions": "以繁體中文回應",
     "autoDownload": "自動下載更新",
-    "autoLaunch": "開機自動啟動Dive AI",
-    "minimalToTray": "關閉按鈕會將Dive AI最小化到背景"
+    "autoLaunch": "開機自動啟動Souls",
+    "minimalToTray": "關閉按鈕會將Souls最小化到背景"
   },
   "toast": {
     "copiedToClipboard": "已複製到剪貼簿"

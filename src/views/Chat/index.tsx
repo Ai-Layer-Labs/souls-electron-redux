@@ -48,7 +48,7 @@ const ChatWindow = () => {
 
       if (data.success) {
         currentChatId.current = id
-        document.title = `${data.data.chat.title} - Dive AI`
+        document.title = `${data.data.chat.title} - Souls`
 
         const convertedMessages = data.data.messages.map((msg: any) => ({
           id: msg.messageId || msg.id || String(currentId.current++),
@@ -319,7 +319,7 @@ const ChatWindow = () => {
                 break
 
               case "chat_info":
-                document.title = `${data.content.title} - Dive AI`
+                document.title = `${data.content.title} - Souls`
                 currentChatId.current = data.content.id
                 navigate(`/chat/${data.content.id}`, { replace: true })
                 break

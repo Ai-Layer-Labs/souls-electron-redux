@@ -57,7 +57,7 @@ export function getAppImageDesktopFile() {
   const desktopFile = path.join(process.env.VITE_PUBLIC, "linux", "dive-ai.desktop")
   const content = fse.existsSync(desktopFile) ? fse.readFileSync(desktopFile, "utf-8") : `[Desktop Entry]
 Type=Application
-Name=Dive AI
+Name=Souls
 Exec=%EXEC%
 Icon=%ICON%
 StartupNotify=false

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Dive AI
+Name=Souls
 Exec=%EXEC%
 Icon=%ICON%
 StartupNotify=false

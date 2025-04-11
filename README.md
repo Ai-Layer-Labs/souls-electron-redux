@@ -1,4 +1,4 @@
-# Dive AI Agent 🤿 🤖
+# Souls Agent 🤿 🤖
 
 ![GitHub stars](https://img.shields.io/github/stars/OpenAgentPlatform/Dive?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/OpenAgentPlatform/Dive?style=social)
