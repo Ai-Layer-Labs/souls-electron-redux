@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "ai.oaphub.dive",
-  "productName": "Dive",
+  "appId": "ai.oaphub.souls",
+  "productName": "Souls",
   "copyright": "Copyright © 2025 Open Agent Platform",
   "asar": true,
   "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
@@ -9,7 +9,7 @@
     {
       "provider": "github",
       "owner": "OpenAgentPlatform",
-      "repo": "Dive"
+      "repo": "Souls"
     }
   ],
   "asarUnpack": [
@@ -44,9 +44,9 @@
     "entitlementsInherit": "resources/mac/entitlements.mac.plist",
     "darkModeSupport": true,
     "extendInfo": {
-      "NSMicrophoneUsageDescription": "Microphone access may be used by Dive plugins, such as Jitsi video conferencing.",
-      "NSCameraUsageDescription": "Camera access may be used by Dive plugins, such as Jitsi video conferencing.",
-      "NSFocusStatusUsageDescription": "Focus status is used by Dive to determine whether to send notifications or not.",
+      "NSMicrophoneUsageDescription": "Microphone access may be used by Souls plugins, such as Jitsi video conferencing.",
+      "NSCameraUsageDescription": "Camera access may be used by Souls plugins, such as Jitsi video conferencing.",
+      "NSFocusStatusUsageDescription": "Focus status is used by Souls to determine whether to send notifications or not.",
       "LSFileQuarantineEnabled": true,
       "NSAppleEventsUsageDescription": "need this permission to execute some functions",
       "com.apple.security.cs.allow-jit": true,
@@ -117,7 +117,7 @@
   "linux": {
     "target": ["AppImage"],
     "asarUnpack": ["**/*.node"],
-    "executableName": "dive"
+    "executableName": "souls"
   },
   "nsis": {
     "oneClick": false,
@@ -149,6 +149,6 @@
   ],
   "dmg": {
     "writeUpdateInfo": false,
-    "title": "Dive-${version}"
+    "title": "Souls-${version}"
   }
 }

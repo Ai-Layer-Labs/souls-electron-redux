@@ -143,15 +143,15 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   }
 
   const handleStorage = () => {
-    openOverlay("Storage")
+    // openOverlay("Storage")
   }
 
   const handlePersonas = () => {
-    openOverlay("Personas")
+    // openOverlay("Personas")
   }
 
   const handleKnowledge = () => {
-    openOverlay("Knowledge")
+    // openOverlay("Knowledge")
   }
 
   const handleModels = () => {

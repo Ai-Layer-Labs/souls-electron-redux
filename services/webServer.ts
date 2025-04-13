@@ -27,7 +27,7 @@ interface FileProcessingResult {
 
 type SSEResponse = Response;
 
-const envPath = envPaths("dive", {suffix: ""})
+const envPath = envPaths("souls", {suffix: ""})
 const PROJECT_ROOT = envPath.data
 
 const OFFLINE_MODE = true

@@ -59,7 +59,7 @@ export function setNodePath() {
 }
 
 export function getLatestVersion(): Promise<string> {
-  return fetch("https://api.github.com/repos/OpenAgentPlatform/Dive/releases/latest")
+  return fetch("https://api.github.com/repos/OpenAgentPlatform/Souls/releases/latest")
     .then(res => res.json())
     .then(data => data.tag_name.slice(1))
 }

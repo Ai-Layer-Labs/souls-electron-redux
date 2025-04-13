@@ -1,18 +1,18 @@
 # Souls Agent 🤿 🤖
 
-![GitHub stars](https://img.shields.io/github/stars/OpenAgentPlatform/Dive?style=social)
-![GitHub forks](https://img.shields.io/github/forks/OpenAgentPlatform/Dive?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/OpenAgentPlatform/Dive?style=social)
-![GitHub repo size](https://img.shields.io/github/repo-size/OpenAgentPlatform/Dive)
-![GitHub language count](https://img.shields.io/github/languages/count/OpenAgentPlatform/Dive)
-![GitHub top language](https://img.shields.io/github/languages/top/OpenAgentPlatform/Dive)
-![GitHub last commit](https://img.shields.io/github/last-commit/OpenAgentPlatform/Dive?color=red)
-[![Discord](https://img.shields.io/badge/Discord-Dive-blue?logo=discord&logoColor=white)](https://discord.com/invite/qceMERf4y2)
-[![Twitter Follow](https://img.shields.io/twitter/follow/Dive_ai_agent?style=social)](https://twitter.com/Dive_ai_agent)
+![GitHub stars](https://img.shields.io/github/stars/OpenAgentPlatform/Souls?style=social)
+![GitHub forks](https://img.shields.io/github/forks/OpenAgentPlatform/Souls?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/OpenAgentPlatform/Souls?style=social)
+![GitHub repo size](https://img.shields.io/github/repo-size/OpenAgentPlatform/Souls)
+![GitHub language count](https://img.shields.io/github/languages/count/OpenAgentPlatform/Souls)
+![GitHub top language](https://img.shields.io/github/languages/top/OpenAgentPlatform/Souls)
+![GitHub last commit](https://img.shields.io/github/last-commit/OpenAgentPlatform/Souls?color=red)
+[![Discord](https://img.shields.io/badge/Discord-Souls-blue?logo=discord&logoColor=white)](https://discord.com/invite/qceMERf4y2)
+[![Twitter Follow](https://img.shields.io/twitter/follow/Souls_ai_agent?style=social)](https://twitter.com/Souls_ai_agent)
 
-Dive is an open-source MCP Host Desktop Application that seamlessly integrates with any LLMs supporting function calling capabilities. ✨
+Souls is an open-source MCP Host Desktop Application that seamlessly integrates with any LLMs supporting function calling capabilities. ✨
 
-![Dive Demo](./docs/DiveAI.gif)
+![Souls Demo](./docs/SoulsAI.gif)
 
 
 ## Features 🎯
@@ -33,8 +33,8 @@ Dive is an open-source MCP Host Desktop Application that seamlessly integrates w
 
 ## Download and Install ⬇️
 
-Get the latest version of Dive:
-[![Download](https://img.shields.io/badge/Download-Latest%20Release-blue.svg)](https://github.com/OpenAgentPlatform/Dive/releases/latest)
+Get the latest version of Souls:
+[![Download](https://img.shields.io/badge/Download-Latest%20Release-blue.svg)](https://github.com/OpenAgentPlatform/Souls/releases/latest)
 
 For Windows users: 🪟
 - Download the .exe version
@@ -62,7 +62,7 @@ While the system comes with a default echo MCP Server, your LLM can access more 
 
 ### Quick Setup
 
-Add this JSON configuration to your Dive MCP settings to enable both tools:
+Add this JSON configuration to your Souls MCP settings to enable both tools:
 
 ```json
  "mcpServers":{
@@ -95,7 +95,7 @@ Add this JSON configuration to your Dive MCP settings to enable both tools:
 
 ### Using SSE Server for MCP
 
-You can also connect to an external MCP server via SSE (Server-Sent Events). Add this configuration to your Dive MCP settings:
+You can also connect to an external MCP server via SSE (Server-Sent Events). Add this configuration to your Souls MCP settings:
 
 ```json
 {
@@ -134,8 +134,8 @@ See [BUILD.md](BUILD.md) for more details.
 
 ## Connect With Us 🌐
 - 💬 Join our [Discord](https://discord.com/invite/qceMERf4y2)
-- 🐦 Follow us on [Twitter/X](https://x.com/Dive_ai_agent)
+- 🐦 Follow us on [Twitter/X](https://x.com/Souls_ai_agent)
 - ⭐ Star us on GitHub
-- 🐛 Report issues on our [Issue Tracker](https://github.com/OpenAgentPlatform/Dive/issues)
+- 🐛 Report issues on our [Issue Tracker](https://github.com/OpenAgentPlatform/Souls/issues)
 
 
