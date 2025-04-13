@@ -1,4 +1,4 @@
-## Table of Contents Build Dive
+## Table of Contents Build Souls
 
 - [Development Requirements](#development-requirements)
 - [Development](#development)
@@ -72,9 +72,9 @@ npm run download:windows-bin
 
 After first launch, you can find the `config.json` file in these locations:
 
-- macOS: `~/Library/Preferences/dive`
-- Windows: `C:\Users\USERNAME\AppData\Local\Dive\Data`
-- Linux: `~/.config/dive`
+- macOS: `~/Library/Preferences/souls`
+- Windows: `C:\Users\USERNAME\AppData\Local\Souls\Data`
+- Linux: `~/.config/souls`
 
 There are four ways to configure MCP servers:
 
@@ -110,11 +110,11 @@ You can edit the `config.json` file directly in the above locations following ea
 
 ### 4. Custom Scripts
 
-You can add your own MCP server scripts in the `.dive/scripts` directory in your home folder, then update the `config.json` accordingly.
+You can add your own MCP server scripts in the `.souls/scripts` directory in your home folder, then update the `config.json` accordingly.
 
 Example:
 
-1. Create a new file `echo.js` in `~/.dive/scripts`
+1. Create a new file `echo.js` in `~/.souls/scripts`
 2. Update `config.json`:
 
 ```json

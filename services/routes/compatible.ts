@@ -44,7 +44,7 @@ export function compatibleRouter() {
   router.get("/", (req, res) => {
     res.json({
       success: true,
-      message: "Welcome to Dive Compatible API! 🚀",
+      message: "Welcome to Souls Compatible API! 🚀",
     });
   });
 
@@ -191,7 +191,7 @@ export function compatibleRouter() {
                     object: "chat.completion.chunk",
                     created: Math.floor(Date.now() / 1000),
                     model: modelSettings.model,
-                    system_fingerprint: "fp_dive",
+                    system_fingerprint: "fp_souls",
                     choices: [
                       {
                         index: 0,
@@ -217,7 +217,7 @@ export function compatibleRouter() {
             object: "chat.completion.chunk",
             created: Math.floor(Date.now() / 1000),
             model: modelSettings.model,
-            system_fingerprint: "fp_dive",
+            system_fingerprint: "fp_souls",
             choices: [
               {
                 index: 0,
@@ -254,7 +254,7 @@ export function compatibleRouter() {
               completion_tokens: tokenUsage.totalOutputTokens,
               total_tokens: tokenUsage.totalTokens,
             },
-            system_fingerprint: "fp_dive",
+            system_fingerprint: "fp_souls",
           });
         }
       } finally {

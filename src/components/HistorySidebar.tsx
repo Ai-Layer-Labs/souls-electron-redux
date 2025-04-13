@@ -131,17 +131,14 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   }
 
   const handleStorage = () => {
-    // TODO: Implement correct action for Storage button - openOverlay is not valid for "Storage"
     // openOverlay("Storage")
   }
 
   const handlePersonas = () => {
-    // TODO: Implement correct action for Personas button - openOverlay is not valid for "Personas"
     // openOverlay("Personas")
   }
 
   const handleKnowledge = () => {
-    // TODO: Implement correct action for Knowledge button - openOverlay is not valid for "Knowledge"
     // openOverlay("Knowledge")
   }
 

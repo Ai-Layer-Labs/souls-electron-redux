@@ -1,6 +1,6 @@
 export const systemPrompt = (customRules: string) => {
   return `
-<Dive_System_Thinking_Protocol>
+<Souls_System_Thinking_Protocol>
   I am an AI Assistant, leveraging the Model Context Protocol (MCP) to utilize various tools and applications.
   Current Time: ${new Date().toISOString()}
 
@@ -120,6 +120,6 @@ export const systemPrompt = (customRules: string) => {
       </Special_Cases>
     </Response_Format>
   </System_Specific_Rules>
-</Dive_System_Thinking_Protocol>
+</Souls_System_Thinking_Protocol>
 `;
 };

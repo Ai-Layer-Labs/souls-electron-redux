@@ -7,7 +7,7 @@ export const envPath = envPaths(app.getName(), {suffix: ""})
 export const configDir = envPath.config
 export const cacheDir = envPath.cache
 export const homeDir = os.homedir()
-export const appDir = path.join(homeDir, ".dive")
+export const appDir = path.join(homeDir, ".souls")
 export const scriptsDir = path.join(appDir, "scripts")
 
 export const binDirList = [
