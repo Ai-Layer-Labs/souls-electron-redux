@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import envPaths from "env-paths";
 
-const envPath = envPaths("dive", {suffix: ""})
+const envPath = envPaths("souls", {suffix: ""})
 const PROJECT_ROOT = envPath.data
 
 const OFFLINE_MODE = true
