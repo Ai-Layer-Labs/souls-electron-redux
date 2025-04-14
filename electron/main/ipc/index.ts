@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow, Menu } from "electron"
 import { ipcSystemHandler } from "./system"
-import { ipcDocumentHandler } from "./document"
+import { setupDocumentHandlers } from "./document"
 import { setupEmbeddingsHandlers } from "./embeddings"
 import { ipcEnvHandler } from "./env"
 import { ipcUtilHandler } from "./util"
@@ -104,7 +104,7 @@ export function ipcHandler(win: BrowserWindow) {
   });
   
   // Set up document and knowledge base handlers
-  ipcDocumentHandler(win)
+  setupDocumentHandlers()
   
   // Set up embedding handlers 
   setupEmbeddingsHandlers()

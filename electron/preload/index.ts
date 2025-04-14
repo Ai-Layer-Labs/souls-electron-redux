@@ -34,9 +34,12 @@ contextBridge.exposeInMainWorld("electron", {
     setMinimalToTray: (enable: boolean) => ipcRenderer.invoke("system:setMinimalToTray", enable),
 
     // popup
-    openPopup: (options: { url: string, width?: number, height?: number, modal?: boolean }) => 
-      ipcRenderer.invoke("popup:open", options),
-    closePopup: () => ipcRenderer.invoke("popup:close"),
+    openPopup: (options: { url: string, width?: number, height?: number, modal?: boolean }) => {
+      return ipcRenderer.invoke('popup:open', options)
+    },
+    closePopup: () => {
+      return ipcRenderer.invoke('popup:close')
+    },
 
     // llm
     openaiModelList: (apiKey: string) => ipcRenderer.invoke("llm:openaiModelList", apiKey),
@@ -62,6 +65,19 @@ contextBridge.exposeInMainWorld("electron", {
     getPlatform: () => ipcRenderer.invoke("env:getPlatform"),
     port: () => ipcRenderer.invoke("env:port"),
     getResourcesPath: (p: string) => ipcRenderer.invoke("env:getResourcesPath", p),
+
+    sendToMain: (channel: string, ...args: unknown[]) => {
+      ipcRenderer.send(channel, ...args)
+    },
+    
+    // Popup window management
+    onPopupClosed: (callback: () => void) => {
+      const subscription = () => callback()
+      ipcRenderer.on('popup:closed', subscription)
+      return () => {
+        ipcRenderer.removeListener('popup:closed', subscription)
+      }
+    },
   },
   
   // Knowledge base specific API
@@ -83,7 +99,7 @@ contextBridge.exposeInMainWorld("electron", {
       ipcRenderer.invoke("knowledge-base:get-chunks", knowledgeBaseId),
     
     // Import a file to a knowledge base
-    importFile: ({ file, collectionId }: { file: any, collectionId: string }) => 
+    importFile: ({ file, collectionId }: { file: File, collectionId: string }) => 
       ipcRenderer.invoke("document:process", file.path, collectionId),
     
     // Select files for import
@@ -105,7 +121,39 @@ contextBridge.exposeInMainWorld("electron", {
     // Save a model file
     saveModelFile: (fileName: string, filePath: string) => 
       ipcRenderer.invoke("embeddings:save-model-file", fileName, filePath),
-  }
+  },
+
+  /**
+   * Utility functions
+   *
+   * @example
+   * const utils = window.soulAPI.utils
+   */
+  utils: {
+    showLoading: () => {
+      const loadingId = 'loading-mask'
+      const loadingEl = document.getElementById(loadingId)
+      if (loadingEl) {
+        loadingEl.style.display = 'flex'
+      } else {
+        const loadingEl = document.createElement('div')
+        loadingEl.id = loadingId
+        loadingEl.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);align-items:center;justify-content:center;z-index:9999;'
+        const loadingContentEl = document.createElement('div')
+        loadingContentEl.style.cssText = 'padding:20px;background:#fff;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.2);text-align:center;'
+        loadingContentEl.innerHTML = '<div>Loading...</div>'
+        loadingEl.appendChild(loadingContentEl)
+        document.body.appendChild(loadingEl)
+      }
+    },
+    removeLoading: () => {
+      const loadingId = 'loading-mask'
+      const loadingEl = document.getElementById(loadingId)
+      if (loadingEl) {
+        loadingEl.style.display = 'none'
+      }
+    },
+  },
 })
 
 // --------- Preload scripts loading ---------
@@ -137,12 +185,14 @@ const safeDOM = {
 }
 
 /**
+ * Loading animation utility
+ * Adapted from various spinner libraries:
  * https://tobiasahlin.com/spinkit
  * https://connoratherton.com/loaders
  * https://projects.lukehaas.me/css-loaders
  * https://matejkustec.github.io/SpinThatShit
  */
-function useLoading() {
+function createLoadingAnimation() {
   const className = `loaders-css__square-spin`
   const styleContent = `
 @keyframes square-spin {
@@ -170,7 +220,7 @@ function useLoading() {
   background: #282c34;
   z-index: 9;
 }
-    `
+  `
   const oStyle = document.createElement("style")
   const oDiv = document.createElement("div")
 
@@ -193,11 +243,13 @@ function useLoading() {
 
 // ----------------------------------------------------------------------
 
-const { appendLoading, removeLoading } = useLoading()
-domReady().then(appendLoading)
+const loadingUtils = createLoadingAnimation()
+domReady().then(() => loadingUtils.appendLoading())
 
 window.onmessage = (ev) => {
-  ev.data.payload === "removeLoading" && removeLoading()
+  if (ev.data.payload === "removeLoading") {
+    loadingUtils.removeLoading()
+  }
 }
 
-setTimeout(removeLoading, 30000)
+setTimeout(() => loadingUtils.removeLoading(), 30000)

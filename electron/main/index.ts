@@ -16,6 +16,7 @@ import { ipcHandler } from "./ipc/index.js"
 import { initTray } from "./tray"
 import { store } from "./store"
 import { initProtocol } from "./protocol"
+import * as KnowledgeStore from "./knowledge-store"
 
 // Get the directory path
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -128,23 +129,21 @@ ipcMain.handle('env:getPlatform', () => {
 // Critical fix for knowledge:list that's being called before setupKnowledgeBaseHandlers
 ipcMain.handle('knowledge:list', async () => {
   console.log("Direct knowledge:list handler invoked");
-  return knowledgeBases;
+  return KnowledgeStore.getAllKnowledgeBases();
 });
 
 // Knowledge:add handler
 ipcMain.handle('knowledge:add', async (_event, content: string, name: string, description?: string) => {
   console.log(`Direct knowledge:add handler invoked: ${name}`);
-  const id = `kb-${Date.now()}`;
-  const newKnowledgeBase = { id, name, description, content };
-  knowledgeBases.push(newKnowledgeBase);
-  return { id };
+  const newKB = KnowledgeStore.createKnowledgeBase(name, content, description);
+  return { id: newKB.id };
 });
 
 // Knowledge:get-documents handler
 ipcMain.handle('knowledge:get-documents', async (_event, knowledgeBaseId: string) => {
   console.log(`Direct knowledge:get-documents handler invoked: ${knowledgeBaseId}`);
-  const kb = knowledgeBases.find(kb => kb.id === knowledgeBaseId);
-  return kb ? [{ id: `doc-${Date.now()}`, knowledgeBaseId, content: kb.content }] : [];
+  // For legacy knowledge:get-documents, use a placeholder
+  return [];
 });
 
 // Knowledge:search handler
@@ -156,31 +155,23 @@ ipcMain.handle('knowledge:search', async (_event, query: string, k?: number) => 
 // Knowledge:delete handler
 ipcMain.handle('knowledge:delete', async (_event, id: string) => {
   console.log(`Direct knowledge:delete handler invoked: ${id}`);
-  const index = knowledgeBases.findIndex(kb => kb.id === id);
-  if (index !== -1) {
-    knowledgeBases.splice(index, 1);
-  }
-  return true;
+  return KnowledgeStore.removeKnowledgeBase(id);
 });
 
 // Critical fix for knowledge-base handlers
 ipcMain.handle('knowledge-base:list', async () => {
   console.log("Direct knowledge-base:list handler invoked");
-  return knowledgeCollections;
+  return KnowledgeStore.getAllCollections();
 });
 
 ipcMain.handle('knowledge-base:create', async (_event, name: string, description?: string) => {
   console.log(`Direct knowledge-base:create handler invoked: ${name}`);
-  const id = `collection-${Date.now()}`;
-  const newCollection = { id, name, description, documents: [] };
-  knowledgeCollections.push(newCollection);
-  return newCollection;
+  return KnowledgeStore.createCollection(name, description);
 });
 
 ipcMain.handle('knowledge-base:get-chunks', async (_event, knowledgeBaseId: number) => {
   console.log(`Direct knowledge-base:get-chunks handler invoked: ${knowledgeBaseId}`);
-  const collection = knowledgeCollections.find(c => c.id === knowledgeBaseId.toString());
-  const documents = collection ? collection.documents : [];
+  const documents = KnowledgeStore.getDocumentsForCollection(knowledgeBaseId);
   
   // For simplicity, just return the documents as chunks
   const chunks = documents.map(doc => ({
@@ -209,6 +200,9 @@ async function onReady() {
 
     darwinPathList.forEach(modifyPath)
   }
+
+  // Add sample knowledge base data for testing
+  KnowledgeStore.addSampleData();
 
   initMCPClient()
   initProtocol()

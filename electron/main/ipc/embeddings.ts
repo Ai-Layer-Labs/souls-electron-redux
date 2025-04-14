@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { Embedder } from './embedder';
+import { Embedder, embed } from './embedder';
 import * as logging from './logging';
 
 /**
@@ -39,12 +39,11 @@ export function setupEmbeddingsHandlers() {
   });
 
   // Generate embeddings for text 
-  ipcMain.handle('embeddings:embed', async (_, texts: string[]) => {
+  ipcMain.handle('embeddings:embed', async (_event, texts: string[]) => {
     try {
-      const embeddings = await Embedder.getInstance();
-      return embeddings;
+      return await embed(texts);
     } catch (error) {
-      logging.error('Error generating embeddings:', error);
+      logging.error(`Error generating embeddings: ${error}`);
       throw error;
     }
   });

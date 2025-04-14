@@ -1,169 +1,120 @@
 import { BrowserWindow, ipcMain, dialog } from 'electron';
-import * as logging from './logging';
-import * as path from 'path';
-import * as fs from 'fs/promises';
-import { knowledgeCollections } from '../index';
+import path from 'path';
+import { promises as fs } from 'fs';
+import * as KnowledgeStore from '../knowledge-store';
 
-// Define types for knowledge collections
-interface KnowledgeCollection {
-  id: string;
-  name: string;
-  description?: string;
-  documents: Document[];
-}
+// Define type for a document
+// interface Document {
+//   id: string;
+//   name: string;
+//   path: string;
+//   content: string;
+//   dateAdded: Date;
+// }
 
-// Define types for documents
-interface Document {
-  id: string;
-  name: string;
-  path: string;
-  content: string;
-  dateAdded: Date;
-}
+export function setupDocumentHandlers() {
+  console.log('Setting up document handlers');
 
-/**
- * Sets up the document IPC handlers
- * @param mainWindow The main application window
- */
-export function ipcDocumentHandler(mainWindow: BrowserWindow) {
-  logging.info('Setting up document handlers');
-
-  // Show open dialog for documents
-  ipcMain.handle('document:show-open-dialog', async (_event, knowledgeBaseId?: string | number) => {
+  // Show open dialog to select documents
+  ipcMain.handle('document:show-open-dialog', async (event) => {
     try {
-      const result = await dialog.showOpenDialog(mainWindow, {
+      const window = BrowserWindow.fromWebContents(event.sender);
+      if (!window) {
+        throw new Error('No window associated with event sender');
+      }
+
+      const { canceled, filePaths } = await dialog.showOpenDialog(window, {
         properties: ['openFile', 'multiSelections'],
         filters: [
-          { name: 'Documents', extensions: ['pdf', 'txt', 'md', 'doc', 'docx'] },
+          { name: 'Text Files', extensions: ['txt', 'md', 'pdf', 'doc', 'docx'] },
           { name: 'All Files', extensions: ['*'] }
         ]
       });
-      
-      if (!result.canceled && result.filePaths.length > 0) {
-        return result.filePaths;
-      }
-      
-      return [];
-    } catch (error) {
-      logging.error(`Failed to show open dialog: ${error}`);
-      throw error;
-    }
-  });
 
-  // Process document and add to knowledge base
-  ipcMain.handle('document:process', async (_event, filePath: string, collectionId?: string | number) => {
-    try {
-      logging.info(`Processing document: ${filePath} for collection: ${collectionId}`);
-      
-      // Read file content
-      let content = '';
-      try {
-        // Simple text file reading - in a real app, you'd use different parsers for different file types
-        content = await fs.readFile(filePath, 'utf-8');
-      } catch (error) {
-        logging.error(`Failed to read file: ${error}`);
-        content = `Failed to read file: ${error}`;
+      if (canceled || filePaths.length === 0) {
+        return { canceled: true, files: [] };
       }
-      
-      // Get collection
-      if (collectionId) {
-        // Find the collection (direct access for simplicity)
-        const collection = knowledgeCollections.find(c => c.id === collectionId.toString());
-        
-        if (collection) {
-          const document: Document = {
-            id: `doc-${Date.now()}`,
-            name: path.basename(filePath),
-            path: filePath,
-            content,
-            dateAdded: new Date()
-          };
-          
-          collection.documents.push(document);
-          logging.info(`Added document ${document.id} to collection ${collectionId}`);
-          
-          return { 
-            success: true, 
-            document,
-            collectionId
-          };
-        } else {
-          // If collection doesn't exist, create it
-          const newCollection: KnowledgeCollection = {
-            id: collectionId.toString(),
-            name: `Collection ${collectionId}`,
-            documents: []
-          };
-          
-          const document: Document = {
-            id: `doc-${Date.now()}`,
-            name: path.basename(filePath),
-            path: filePath,
-            content,
-            dateAdded: new Date()
-          };
-          
-          newCollection.documents.push(document);
-          knowledgeCollections.push(newCollection);
-          
-          logging.info(`Created new collection ${collectionId} and added document ${document.id}`);
-          
-          return { 
-            success: true, 
-            document,
-            collectionId
-          };
-        }
-      }
-      
-      // If no collection ID, just return the document
-      return { 
-        success: true, 
-        document: {
-          id: `doc-${Date.now()}`,
-          name: path.basename(filePath),
+
+      return {
+        canceled: false,
+        files: filePaths.map(filePath => ({
           path: filePath,
-          content,
-          dateAdded: new Date()
-        }
+          name: path.basename(filePath)
+        }))
       };
-    } catch (error) {
-      logging.error(`Failed to process document: ${error}`);
-      throw error;
+    } catch (error: unknown) {
+      console.error('Error showing open dialog:', error);
+      return { canceled: true, error: error instanceof Error ? error.message : String(error) };
     }
   });
 
-  // Get documents for a knowledge base
+  // Process documents and add to knowledge base collection
+  ipcMain.handle('document:process', async (_event, files, collectionId) => {
+    console.log(`Processing ${files.length} document(s) for collection ${collectionId}`);
+    
+    try {
+      const results = [];
+      
+      for (const file of files) {
+        // Read file content
+        const content = await fs.readFile(file.path, 'utf-8');
+        
+        // Create document object
+        const document: KnowledgeStore.Document = {
+          id: `doc-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          name: file.name,
+          path: file.path,
+          content: content,
+          dateAdded: new Date()
+        };
+        
+        // Add document to collection
+        const success = KnowledgeStore.addDocumentToCollection(collectionId, document);
+        
+        if (success) {
+          results.push({
+            name: file.name,
+            id: document.id,
+            success: true
+          });
+          
+          console.log(`Added document ${document.id} to collection ${collectionId}`);
+        }
+      }
+      
+      return {
+        success: true,
+        processedFiles: results
+      };
+    } catch (error: unknown) {
+      console.error('Error processing documents:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  });
+
+  // Get documents for a collection
   ipcMain.handle('knowledge-base:get-documents', async (_event, collectionId: string | number) => {
     try {
-      logging.info(`Getting documents for collection: ${collectionId}`);
-      const collection = knowledgeCollections.find(c => c.id === collectionId.toString());
+      console.log(`Getting documents for collection: ${collectionId}`);
+      const collection = KnowledgeStore.getCollection(collectionId.toString());
       return collection ? collection.documents : [];
     } catch (error) {
-      logging.error(`Failed to get documents: ${error}`);
+      console.error(`Failed to get documents: ${error}`);
       throw error;
     }
   });
-  
-  // Remove file
+
+  // Remove a document
   ipcMain.handle('document:remove-file', async (_event, fileId: string) => {
     try {
-      logging.info(`Removing file: ${fileId}`);
-      let removed = false;
-      
-      // Look through all collections for the document
-      for (const collection of knowledgeCollections) {
-        const index = collection.documents.findIndex(doc => doc.id === fileId);
-        if (index >= 0) {
-          collection.documents.splice(index, 1);
-          removed = true;
-          break;
-        }
-      }
-      
+      console.log(`Removing file: ${fileId}`);
+      const removed = KnowledgeStore.removeDocumentFromCollection(fileId);
       return removed;
     } catch (error) {
-      logging.error(`Failed to remove file: ${error}`);
+      console.error(`Failed to remove file: ${error}`);
       throw error;
     }
   });

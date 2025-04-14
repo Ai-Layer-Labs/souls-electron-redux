@@ -139,7 +139,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   }
 
   const handleKnowledge = () => {
-    // openOverlay("Knowledge")
+    _openOverlay("Knowledge")
   }
 
   const handleModels = () => {

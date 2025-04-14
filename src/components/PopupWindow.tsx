@@ -27,7 +27,7 @@ export default function PopupWindow({
 
   return (
     <Portal.Root container={root}>
-      <div className={`container-wrapper ${noBackground ? "transparent" : ""} ${overlay ? "overlay" : ""} ${!isSidebarVisible ? "full-width" : ""}`} style={{ zIndex }}>
+      <div className={`container-wrapper ${noBackground ? "transparent" : ""} ${overlay ? "overlay" : ""} ${!isSidebarVisible ? "" : ""}`} style={{ zIndex }}>
         <DismissableLayer onPointerDownOutside={onClickOutside}>
           {children}
         </DismissableLayer>
