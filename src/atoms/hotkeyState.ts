@@ -112,10 +112,10 @@ function parseHotkeyComponent(component: string, event: HotkeyEvent): Record<str
   return parseHotkeyText(hotkey[0].content, event)
 }
 
-function parseHotkeyText(text: string, event: HotkeyEvent): Record<string, any> {
+function parseHotkeyText(text: string, event: HotkeyEvent): Record<string, Record<string, { event: HotkeyEvent }>> {
   const keys = text.split("")
   keys.reverse()
-  return keys.reduce((acc, key, i) => {
+  return keys.reduce<Record<string, Record<string, { event: HotkeyEvent }>>>((acc, key, i) => {
     if (i === 0) {
       return {
         [key]: {
@@ -127,10 +127,10 @@ function parseHotkeyText(text: string, event: HotkeyEvent): Record<string, any> 
     return {
       [key]: acc
     }
-  }, {} as Record<string, any>)
+  }, {})
 }
 
-function parseHotkeyTag(hotkey: string, event: HotkeyEvent): Record<string, any> {
+function parseHotkeyTag(hotkey: string, event: HotkeyEvent): Record<string, { event: HotkeyEvent, modifier: ModifierPressed }> {
   // minimal hotkey is like "c-a" if include "-" and length is less than 3, it"s invalid
   if (hotkey.includes("-") && hotkey.length < 3) {
     return {}
@@ -184,11 +184,11 @@ export function handleGlobalHotkey(e: KeyboardEvent) {
     e.preventDefault()
   }
 
-  if (event && event.startsWith("global:")) {
-    return store.set(handleGlobalEventAtom, event, e)
+  if (typeof event === "string" && event.startsWith("global:")) {
+    return store.set(handleGlobalEventAtom, event as GlobalHotkeyEvent, e)
   }
 
-  if (event) {
+  if (typeof event === "string") {
     emitter.emit(event)
   }
 }
@@ -197,37 +197,41 @@ const handleGlobalEventAtom = atom(
   null,
   (get, set, event: GlobalHotkeyEvent, e: KeyboardEvent) => {
     switch (event) {
-      case "global:close-layer":
+      case "global:close-layer": {
         const lastLayer = set(popLayerAtom)
         if (lastLayer) {
           e.stopImmediatePropagation()
         }
         break
-      case "global:new-chat":
+      }
+      case "global:new-chat": {
         set(closeAllSidebarsAtom)
         set(closeAllOverlaysAtom)
         set(currentChatIdAtom, "")
         router.navigate("/")
         break
-      case "global:toggle-sidebar":
+      }
+      case "global:toggle-sidebar": {
         set(toggleSidebarAtom)
         break
-      case "global:toggle-keymap-modal":
+      }
+      case "global:toggle-keymap-modal": {
         set(toggleKeymapModalAtom)
         break
+      }
     }
   }
 )
 
-export const hotKeymapAtom = atom<Record<string, any>|null>(null)
+export const hotKeymapAtom = atom<Record<string, Record<string, { event: HotkeyEvent, modifier?: ModifierPressed }>> | null>(null)
 export const rawKeymapAtom = atom<Record<string, string>>({})
 
 export const loadHotkeyMapAtom = atom(
   null,
   async (get, set) => {
-    const rawMap = await window.ipcRenderer.getHotkeyMap()
-    const map = getHotkeyMap(rawMap)
-    set(rawKeymapAtom, rawMap)
+    const rawMap = await window.electron.ipcRenderer.getHotkeyMap()
+    const map = getHotkeyMap(rawMap as Record<HotkeyEvent, string>)
+    set(rawKeymapAtom, rawMap as Record<string, string>)
     set(hotKeymapAtom, map)
   }
 )
@@ -240,7 +244,7 @@ export const getHotkeyEventAtom = atom(
       return null
     }
 
-    let _map
+    let _map: { event: HotkeyEvent, modifier?: ModifierPressed } | undefined
     for (const key of keys) {
       if (!_map) {
         _map = map[key]
@@ -256,7 +260,7 @@ export const getHotkeyEventAtom = atom(
         continue
       }
 
-      if (!compareModifierPressed(_map.modifier, modifierPressed)) {
+      if (!compareModifierPressed(_map.modifier || {}, modifierPressed)) {
         return null
       }
 

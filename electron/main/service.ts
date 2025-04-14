@@ -1,6 +1,11 @@
 import { app } from "electron"
 import path from "node:path"
 import fse from "fs-extra"
+import dotenv from "dotenv"
+
+// Load environment variables first, before any other initialization
+dotenv.config()
+
 import { MCPClient, WebServer, initDatabase } from "../../services/index.js"
 import { DatabaseMode, getDB } from "../../services/database/index.js"
 import { migrate } from "drizzle-orm/better-sqlite3/migrator"

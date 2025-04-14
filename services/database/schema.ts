@@ -16,6 +16,14 @@ export const messages = sqliteTable("messages", {
   files: text("files", { mode: "json" }).notNull(),
 });
 
+export const knowledgeBases = sqliteTable('knowledge_bases', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+});
+
 // export types
 export type Chat = typeof chats.$inferSelect;
 export type NewChat = typeof chats.$inferInsert;

@@ -9,7 +9,7 @@ export default function useUpdateProgress(onComplete: () => void, onError: (e: {
   const newVersion = useAtomValue(newVersionAtom)
 
   useEffect(() => {
-    window.ipcRenderer.invoke("check-update")
+    window.electron.ipcRenderer.invoke("check-update")
   }, [])
 
   const update = useCallback(async () => {
@@ -20,11 +20,11 @@ export default function useUpdateProgress(onComplete: () => void, onError: (e: {
 
     const autoDownload = getAutoDownload()
     if (autoDownload || progress >= 100) {
-      window.ipcRenderer.invoke("quit-and-install")
+      window.electron.ipcRenderer.invoke("quit-and-install")
       return
     }
 
-    window.ipcRenderer.invoke("start-download")
+    window.electron.ipcRenderer.invoke("start-download")
     setProgress(0.1)
   }, [progress])
 
@@ -48,14 +48,14 @@ export default function useUpdateProgress(onComplete: () => void, onError: (e: {
       return
     }
 
-    window.ipcRenderer.on("download-progress", handleDownloadProgress)
-    window.ipcRenderer.on("update-downloaded", onComplete)
-    window.ipcRenderer.on("update-error", handleError)
+    window.electron.ipcRenderer.on("download-progress", handleDownloadProgress)
+    window.electron.ipcRenderer.on("update-downloaded", onComplete)
+    window.electron.ipcRenderer.on("update-error", handleError)
 
     return () => {
-      window.ipcRenderer.off("download-progress", handleDownloadProgress)
-      window.ipcRenderer.off("update-downloaded", onComplete)
-      window.ipcRenderer.off("update-error", handleError)
+      window.electron.ipcRenderer.off("download-progress", handleDownloadProgress)
+      window.electron.ipcRenderer.off("update-downloaded", onComplete)
+      window.electron.ipcRenderer.off("update-error", handleError)
     }
   }, [handleDownloadProgress, onComplete, onError])
 

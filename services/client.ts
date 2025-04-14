@@ -15,6 +15,7 @@ import { PromptManager } from "./prompt/index.js";
 import logger from "./utils/logger.js";
 import { processHistoryMessages } from "./utils/processHistory.js";
 import { iQueryInput, iStreamMessage } from "./utils/types.js";
+import KnowledgeBaseManager from "./knowledgeBase/index.js";
 
 interface MCPClientConfig {
   modelConfigPath?: string;
@@ -36,6 +37,8 @@ export class MCPClient {
     PromptManager.getInstance(this.config?.customRulesPath);
     // Initialize MCP Server Manager
     await MCPServerManager.getInstance(this.config?.mcpServerConfigPath).initialize();
+    // Initialize Knowledge Base Manager
+    await KnowledgeBaseManager.getInstance().initialize();
     console.log("\n"); // New line
   }
 
@@ -47,8 +50,8 @@ export class MCPClient {
     fingerprint?: string,
     user_access_token?: string
   ) {
-    let startTime = new Date();
-    let chat_id = chatId || randomUUID();
+    const startTime = new Date();
+    const chat_id = chatId || randomUUID();
     logger.debug(`[${chat_id}] Processing query`);
     let history: BaseMessage[] = [];
     let title = "New Chat";
@@ -213,13 +216,13 @@ export class MCPClient {
 
       logger.debug(`[${chat_id}] Query processed successfully`);
       return result;
-    } catch (error: any) {
-      logger.error(`[${chat_id}] Error processing query: ${error.message}`);
+    } catch (error: unknown) {
+      logger.error(`[${chat_id}] Error processing query: ${error instanceof Error ? error.message : String(error)}`);
       if (onStream) {
         onStream(
           JSON.stringify({
             type: "error",
-            content: (error as Error).message,
+            content: error instanceof Error ? error.message : String(error),
           } as iStreamMessage)
         );
       }

@@ -3,6 +3,7 @@ import axios, { AxiosInstance } from "axios";
 import Database from "better-sqlite3";
 import { and, eq, gt } from "drizzle-orm";
 import { BetterSQLite3Database, drizzle } from "drizzle-orm/better-sqlite3";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import jwt from "jsonwebtoken";
 import logger from "../utils/logger.js";
 import * as schema from "./schema.js";
@@ -46,6 +47,10 @@ class DirectDatabaseAccess implements DatabaseOperations {
     try {
       const sqlite = new Database(dbPath || "data/database.sqlite");
       this.db = drizzle(sqlite, { schema: schema });
+
+      // Run migrations
+      migrate(this.db, { migrationsFolder: "drizzle" });
+      logger.info("Database migrations applied successfully.");
 
       // Create index after drizzle initialization
       // sqlite.exec(`

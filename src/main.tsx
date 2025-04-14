@@ -5,7 +5,7 @@ import "./styles/index.scss"
 import App from "./App.tsx"
 import "./i18n"
 
-if (window.ipcRenderer) {
+if (window.electron.ipcRenderer) {
   const originalFetch = window.fetch
   let port: number | null = null
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -13,11 +13,11 @@ if (window.ipcRenderer) {
       return originalFetch(input, init)
     }
 
-    port = port ?? (await window.ipcRenderer.port())
+    port = port ?? (await window.electron.ipcRenderer.port())
     return originalFetch(`http://localhost:${port}${input}`, init)
   }
 
-  window.PLATFORM = await window.ipcRenderer.getPlatform() as any
+  window.PLATFORM = await window.electron.ipcRenderer.getPlatform() as "darwin" | "win32" | "linux"
 }
 
 window.addEventListener('contextmenu', (e) => {
@@ -25,7 +25,7 @@ window.addEventListener('contextmenu', (e) => {
   const selection = window.getSelection()?.toString()
 
   if (selection) {
-    window.ipcRenderer.showSelectionContextMenu()
+    window.electron.ipcRenderer.showSelectionContextMenu()
   }
 })
 

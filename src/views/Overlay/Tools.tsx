@@ -1,12 +1,12 @@
-// @ts-ignore
+// @ts-expect-error jsonlint-mod has no type definitions
 import jsonlint from "jsonlint-mod"
 import React, { useEffect, useState, useRef, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { showToastAtom } from "../../atoms/toastState"
 import CodeMirror, { EditorView } from "@uiw/react-codemirror"
 import { json } from "@codemirror/lang-json"
-import { linter, lintGutter } from "@codemirror/lint"
+import { linter, lintGutter, Diagnostic } from "@codemirror/lint"
 import { systemThemeAtom, themeAtom } from "../../atoms/themeState"
 import { closeOverlayAtom } from "../../atoms/layerState"
 import Switch from "../../components/Switch"
@@ -17,8 +17,8 @@ import Tooltip from "../../components/Tooltip"
 interface ConfigModalProps {
   title: string
   subtitle?: string
-  config?: Record<string, any>
-  onSubmit: (config: Record<string, any>) => void
+  config?: Record<string, unknown>
+  onSubmit: (config: Record<string, unknown>) => void
   onCancel: () => void
 }
 
@@ -32,6 +32,23 @@ interface ToolsCache {
     }[]
     disabled: boolean
   }
+}
+
+interface McpServer {
+  command?: string
+  args?: string[]
+  url?: string
+  transport?: string
+  enabled?: boolean
+  disabled?: boolean
+}
+
+interface McpConfig extends Record<string, unknown> {
+  mcpServers: Record<string, McpServer>
+}
+
+interface JsonLintError extends Error {
+  message: string
 }
 
 const ConfigModal: React.FC<ConfigModalProps> = ({
@@ -83,30 +100,33 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
     }
   }
 
+  const handleJsonLint = (view: EditorView): Diagnostic[] => {
+    const doc = view.state.doc.toString()
+    if (!doc.trim())
+      return []
+
+    try {
+      jsonlint.parse(doc)
+      setIsFormatError(false)
+      return []
+    } catch (e) {
+      const error = e as JsonLintError
+      const lineMatch = error.message.match(/line\s+(\d+)/)
+      const line = lineMatch ? parseInt(lineMatch[1]) : 1
+      const linePos = view.state.doc.line(line)
+      setIsFormatError(true)
+
+      return [{
+        from: linePos.from,
+        to: linePos.to,
+        message: error.message,
+        severity: "error" as const
+      }]
+    }
+  }
+
   const createJsonLinter = () => {
-    return linter((view) => {
-      const doc = view.state.doc.toString()
-      if (!doc.trim())
-        return []
-
-      try {
-        jsonlint.parse(doc)
-        setIsFormatError(false)
-        return []
-      } catch (e: any) {
-        const lineMatch = e.message.match(/line\s+(\d+)/)
-        const line = lineMatch ? parseInt(lineMatch[1]) : 1
-        const linePos = view.state.doc.line(line)
-        setIsFormatError(true)
-
-        return [{
-          from: linePos.from,
-          to: linePos.to,
-          message: e.message,
-          severity: "error",
-        }]
-      }
-    })
+    return linter(handleJsonLint)
   }
 
   const inputTheme = EditorView.theme({
@@ -144,7 +164,7 @@ const ConfigModal: React.FC<ConfigModalProps> = ({
               createJsonLinter(),
               inputTheme
             ]}
-            onChange={(value, viewUpdate) => {
+            onChange={(value) => {
               if(!value.trim().startsWith("{")) {
                 setJsonString(`{\n ${value}\n}`)
               }else{
@@ -181,7 +201,7 @@ const Tools = () => {
   const { t } = useTranslation()
   const tools = useAtomValue(toolsAtom)
   const [showConfigModal, setShowConfigModal] = useState(false)
-  const [mcpConfig, setMcpConfig] = useState<Record<string, any>>({})
+  const [mcpConfig, setMcpConfig] = useState<McpConfig>({ mcpServers: {} })
   const [isLoading, setIsLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const showToast = useSetAtom(showToastAtom)
@@ -233,7 +253,7 @@ const Tools = () => {
     }
   }
 
-  const updateMCPConfig = async (newConfig: Record<string, any> | string, force = false) => {
+  const updateMCPConfig = async (newConfig: McpConfig | string, force = false) => {
     const config = typeof newConfig === "string" ? JSON.parse(newConfig) : newConfig
     Object.keys(config.mcpServers).forEach(key => {
       const cfg = config.mcpServers[key]
@@ -300,12 +320,12 @@ const Tools = () => {
     }
   }
 
-  const handleConfigSubmit = async (newConfig: Record<string, any>) => {
+  const handleConfigSubmit = async (newConfig: Record<string, unknown>) => {
     try {
-      const filledConfig = await window.ipcRenderer.fillPathToConfig(JSON.stringify(newConfig))
+      const filledConfig = await window.electron.ipcRenderer.fillPathToConfig(JSON.stringify(newConfig))
       const data = await updateMCPConfig(filledConfig)
       if (data.success) {
-        setMcpConfig(newConfig)
+        setMcpConfig(newConfig as McpConfig)
         setShowConfigModal(false)
         fetchTools()
         handleUpdateConfigResponse(data)
@@ -324,16 +344,26 @@ const Tools = () => {
       setIsLoading(true)
       const currentEnabled = tool.enabled
 
-      const newConfig = JSON.parse(JSON.stringify(mcpConfig))
-      newConfig.mcpServers[tool.name].enabled = !currentEnabled
+      const newConfig: McpConfig = {
+        mcpServers: {
+          ...mcpConfig.mcpServers,
+          [tool.name]: {
+            ...mcpConfig.mcpServers[tool.name],
+            enabled: !currentEnabled
+          }
+        }
+      }
 
       const data = await updateMCPConfig(newConfig)
       if (data.errors && Array.isArray(data.errors) && data.errors.length) {
         data.errors
-          .map((e: any) => e.serverName)
+          .map((e: { serverName: string }) => e.serverName)
           .forEach((serverName: string) => {
-            newConfig.mcpServers[serverName].enabled = false
-            newConfig.mcpServers[serverName].disabled = true
+            newConfig.mcpServers[serverName] = {
+              ...newConfig.mcpServers[serverName],
+              enabled: false,
+              disabled: true
+            }
           })
 
         // reset enable
@@ -367,26 +397,29 @@ const Tools = () => {
   }
 
   const handleOpenConfigFolder = async () => {
-    window.ipcRenderer.openScriptsDir()
+    window.electron.ipcRenderer.openScriptsDir()
   }
 
-  const handleAddSubmit = async (newConfig: Record<string, any>) => {
-    const mergedConfig = mcpConfig
+  const handleAddSubmit = async (newConfig: Record<string, unknown>) => {
+    const mergedConfig = mcpConfig as McpConfig
     const configKeys = Object.keys(newConfig)
     if (configKeys.includes("mcpServers")) {
-      mergedConfig.mcpServers = { ...mergedConfig.mcpServers, ...newConfig.mcpServers }
+      const newMcpServers = newConfig.mcpServers as Record<string, McpServer>
+      mergedConfig.mcpServers = { ...mergedConfig.mcpServers, ...newMcpServers }
     }
 
-    mergedConfig.mcpServers = configKeys.reduce((acc, key) => {
-      if (("command" in newConfig[key] && "args" in newConfig[key]) || "url" in newConfig[key]) {
-        acc[key] = { ...(mergedConfig.mcpServers[key] || {}), ...newConfig[key] }
+    mergedConfig.mcpServers = configKeys.reduce<Record<string, McpServer>>((acc, key) => {
+      const server = newConfig[key] as McpServer
+      if (("command" in server && "args" in server) || "url" in server) {
+        acc[key] = { ...(mergedConfig.mcpServers[key] || {}), ...server }
       }
       return acc
     }, mergedConfig.mcpServers)
 
-    mergedConfig.mcpServers = Object.keys(mergedConfig.mcpServers).reduce((acc, key) => {
-      if (!("enabled" in acc[key])) {
-        acc[key].enabled = true
+    mergedConfig.mcpServers = Object.keys(mergedConfig.mcpServers).reduce<Record<string, McpServer>>((acc, key) => {
+      const server = acc[key]
+      if (!("enabled" in server)) {
+        server.enabled = true
       }
       return acc
     }, mergedConfig.mcpServers)

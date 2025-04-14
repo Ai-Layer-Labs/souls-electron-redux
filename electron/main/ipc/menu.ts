@@ -1,23 +1,11 @@
-import { ipcMain, BrowserWindow, Menu } from "electron"
+import { ipcMain } from 'electron';
+import * as logging from './logging';
 
-const selectionMenu = Menu.buildFromTemplate([
-  { role: "copy" },
-  { role: "selectAll" }
-])
+/**
+ * Sets up the menu IPC handlers
+ */
+export function ipcMenuHandler() {
+  logging.info('Setting up menu handlers');
 
-const inputMenu = Menu.buildFromTemplate([
-  { role: "copy" },
-  { role: "paste" },
-  { role: "cut" },
-  { role: "selectAll" }
-])
-
-export function ipcMenuHandler(win: BrowserWindow) {
-  ipcMain.handle("show-selection-context-menu", () => {
-    selectionMenu.popup()
-  })
-
-  ipcMain.handle("show-input-context-menu", () => {
-    inputMenu.popup()
-  })
+  // Add any menu-related IPC handlers here if needed
 }

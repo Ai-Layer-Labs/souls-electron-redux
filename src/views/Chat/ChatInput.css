@@ -1,0 +1,32 @@
+.chat-input-container {
+  /* existing styles */
+}
+
+.chat-input-wrapper {
+  /* existing styles */
+}
+
+.input-actions {
+  /* existing styles */
+}
+
+.document-import-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-color);
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.document-import-btn:hover {
+  opacity: 1;
+}
+
+.document-import-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* existing styles */ 

@@ -32,8 +32,8 @@ export interface FieldDefinition {
   inputType?: InputType
   description: string
   required: boolean
-  default: any
-  placeholder?: any
+  default: string | number | boolean | null
+  placeholder?: string | number | boolean | null
   label: string
   listCallback?: (deps: Record<string, string>) => Promise<string[]>
   listDependencies?: string[]
@@ -60,7 +60,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.openaiModelList(deps.apiKey)
+        const results = await window.electron.ipcRenderer.openaiModelList(deps.apiKey)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -96,7 +96,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Default model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.openaiCompatibleModelList(deps.apiKey, deps.baseURL)
+        const results = await window.electron.ipcRenderer.openaiCompatibleModelList(deps.apiKey, deps.baseURL)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -123,7 +123,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.ollamaModelList(deps.baseURL)
+        const results = await window.electron.ipcRenderer.ollamaModelList(deps.baseURL)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -159,7 +159,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.anthropicModelList(deps.apiKey, deps.baseURL)
+        const results = await window.electron.ipcRenderer.anthropicModelList(deps.apiKey, deps.baseURL)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -186,7 +186,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.googleGenaiModelList(deps.apiKey)
+        const results = await window.electron.ipcRenderer.googleGenaiModelList(deps.apiKey)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -213,7 +213,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.mistralaiModelList(deps.apiKey)
+        const results = await window.electron.ipcRenderer.mistralaiModelList(deps.apiKey)
         if (results.error) {
           throw new Error(results.error)
         }
@@ -267,7 +267,7 @@ export const defaultInterface: Record<InterfaceProvider, InterfaceDefinition> = 
       default: "",
       placeholder: "Select a model",
       listCallback: async (deps) => {
-        const results = await window.ipcRenderer.bedrockModelList(deps.accessKeyId, deps.secretAccessKey, deps.sessionToken, deps.region)
+        const results = await window.electron.ipcRenderer.bedrockModelList(deps.accessKeyId, deps.secretAccessKey, deps.sessionToken, deps.region)
         if (results.error) {
           throw new Error(results.error)
         }

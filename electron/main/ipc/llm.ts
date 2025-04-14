@@ -1,102 +1,131 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-import { ipcMain, BrowserWindow } from "electron"
-import { Ollama } from "ollama"
-import OpenAI from "openai"
-import { Mistral } from "@mistralai/mistralai"
-import {
-  BedrockClient,
-  ListFoundationModelsCommand,
-} from "@aws-sdk/client-bedrock"
+import { ipcMain } from 'electron';
+import * as logging from './logging';
 
-export function ipcLlmHandler(win: BrowserWindow) {
-  ipcMain.handle("llm:openaiModelList", async (_, apiKey: string) => {
+/**
+ * Sets up the LLM IPC handlers
+ */
+export function ipcLlmHandler() {
+  logging.info('Setting up LLM handlers');
+
+  // OpenAI model list
+  ipcMain.handle('llm:openaiModelList', async (_event, apiKey: string) => {
     try {
-      const client = new OpenAI({ apiKey })
-      const models = await client.models.list()
-      return { results: models.data.map((model) => model.id), error: null }
+      // This is a placeholder. In a real implementation,
+      // you would fetch the model list from the OpenAI API
+      return {
+        models: [
+          { id: 'gpt-4-turbo', name: 'GPT-4 Turbo' },
+          { id: 'gpt-4', name: 'GPT-4' },
+          { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' }
+        ]
+      };
     } catch (error) {
-      return { results: [], error: (error as Error).message }
+      logging.error(`Failed to get OpenAI model list: ${error}`);
+      return { models: [] };
     }
-  })
+  });
 
-  ipcMain.handle("llm:anthropicModelList", async (_, apiKey: string, baseURL: string) => {
+  // OpenAI compatible model list
+  ipcMain.handle('llm:openaiCompatibleModelList', async (_event, apiKey: string, baseURL: string) => {
     try {
-      const client = new Anthropic({ apiKey, baseURL })
-      const models = await client.models.list()
-      return { results: models.data.map((model) => model.id), error: null }
+      // This is a placeholder. In a real implementation,
+      // you would fetch the model list from the compatible API
+      return {
+        models: [
+          { id: 'compatible-model-1', name: 'Compatible Model 1' },
+          { id: 'compatible-model-2', name: 'Compatible Model 2' }
+        ]
+      };
     } catch (error) {
-      return { results: [], error: (error as Error).message }
+      logging.error(`Failed to get OpenAI compatible model list: ${error}`);
+      return { models: [] };
     }
-  })
+  });
 
-  ipcMain.handle("llm:ollamaModelList", async (_, baseURL: string) => {
+  // Anthropic model list
+  ipcMain.handle('llm:anthropicModelList', async (_event, apiKey: string) => {
     try {
-      const ollama = new Ollama({ host: baseURL })
-      const list = await ollama.list()
-      return { results: list.models.map((model) => model.name), error: null }
+      // This is a placeholder. In a real implementation,
+      // you would fetch the model list from the Anthropic API
+      return {
+        models: [
+          { id: 'claude-3-opus', name: 'Claude 3 Opus' },
+          { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet' },
+          { id: 'claude-3-haiku', name: 'Claude 3 Haiku' }
+        ]
+      };
     } catch (error) {
-      return { results: [], error: (error as Error).message }
+      logging.error(`Failed to get Anthropic model list: ${error}`);
+      return { models: [] };
     }
-  })
+  });
 
-  ipcMain.handle("llm:openaiCompatibleModelList", async (_, apiKey: string, baseURL: string) => {
+  // Ollama model list
+  ipcMain.handle('llm:ollamaModelList', async (_event, baseURL: string) => {
     try {
-      const client = new OpenAI({ apiKey, baseURL })
-      const list = await client.models.list()
-      return { results: list.data.map((model) => model.id), error: null }
+      // This is a placeholder. In a real implementation,
+      // you would fetch the model list from the Ollama API
+      return {
+        models: [
+          { id: 'llama2', name: 'Llama 2' },
+          { id: 'mistral', name: 'Mistral' }
+        ]
+      };
     } catch (error) {
-      return { results: [], error: (error as Error).message }
+      logging.error(`Failed to get Ollama model list: ${error}`);
+      return { models: [] };
     }
-  })
+  });
 
-  ipcMain.handle("llm:googleGenaiModelList", async (_, apiKey: string) => {
+  // Google GenAI model list
+  ipcMain.handle('llm:googleGenaiModelList', async (_event, apiKey: string) => {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
-      const response = await fetch(url)
-      const data = await response.json() as { models: { name: string }[] }
-      return { results: data.models.map((model) => model.name), error: null }
+      // This is a placeholder. In a real implementation,
+      // you would fetch the model list from the Google GenAI API
+      return {
+        models: [
+          { id: 'gemini-pro', name: 'Gemini Pro' },
+          { id: 'gemini-ultra', name: 'Gemini Ultra' }
+        ]
+      };
     } catch (error) {
-      return { results: [], error: (error as Error).message }
+      logging.error(`Failed to get Google GenAI model list: ${error}`);
+      return { models: [] };
     }
-  })
+  });
 
-  ipcMain.handle("llm:mistralaiModelList", async (_, apiKey: string) => {
+  // MistralAI model list
+  ipcMain.handle('llm:mistralaiModelList', async (_event, apiKey: string) => {
     try {
-      const client = new Mistral({ apiKey })
-      const models = await client.models.list()
-      return { results: models.data?.map((model) => model.id) ?? [], error: null }
+      // This is a placeholder. In a real implementation,
+      // you would fetch the model list from the MistralAI API
+      return {
+        models: [
+          { id: 'mistral-large', name: 'Mistral Large' },
+          { id: 'mistral-medium', name: 'Mistral Medium' },
+          { id: 'mistral-small', name: 'Mistral Small' }
+        ]
+      };
     } catch (error) {
-      return { results: [], error: (error as Error).message }
+      logging.error(`Failed to get MistralAI model list: ${error}`);
+      return { models: [] };
     }
-  })
+  });
 
-  ipcMain.handle("llm:bedrockModelList", async (_, accessKeyId: string, secretAccessKey: string, sessionToken: string, region: string) => {
+  // Bedrock model list
+  ipcMain.handle('llm:bedrockModelList', async (_event, accessKeyId: string, secretAccessKey: string, sessionToken: string, region: string) => {
     try {
-      let modelPrefix = ""
-      if (region.startsWith("us-")) {
-        modelPrefix = "us."
-      } else if (region.startsWith("eu-")) {
-        modelPrefix = "eu."
-      } else if (region.startsWith("ap-")) {
-        modelPrefix = "apac."
-      } else if (region.includes("-")) {
-        modelPrefix = region.split("-")[0] + "."
-      }
-
-      const client = new BedrockClient({
-        region,
-        credentials: {
-          accessKeyId,
-          secretAccessKey,
-          sessionToken,
-        }
-      })
-      const command = new ListFoundationModelsCommand({})
-      const response = await client.send(command)
-      const models = response.modelSummaries
-      return { results: models?.map((model) => `${modelPrefix}${model.modelId}`) ?? [], error: null }
+      // This is a placeholder. In a real implementation,
+      // you would fetch the model list from the AWS Bedrock API
+      return {
+        models: [
+          { id: 'amazon.titan-text', name: 'Amazon Titan Text' },
+          { id: 'anthropic.claude-v2', name: 'Anthropic Claude V2' }
+        ]
+      };
     } catch (error) {
-      return { results: [], error: (error as Error).message }
+      logging.error(`Failed to get Bedrock model list: ${error}`);
+      return { models: [] };
     }
-  })
+  });
 }

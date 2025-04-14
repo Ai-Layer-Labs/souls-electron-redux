@@ -18,7 +18,7 @@ export default function Updater() {
 
     const autoDownload = getAutoDownload()
     if (window.PLATFORM !== "darwin" && autoDownload) {
-      window.ipcRenderer.invoke("start-download")
+      window.electron.ipcRenderer.invoke("start-download")
       return
     }
 
@@ -33,12 +33,12 @@ export default function Updater() {
 
   // listen new version
   useEffect(() => {
-    window.ipcRenderer.on("update-can-available", handleUpdateAvailable)
-    window.ipcRenderer.on("update-downloaded", handleUpdateDownloaded)
+    window.electron.ipcRenderer.on("update-can-available", handleUpdateAvailable)
+    window.electron.ipcRenderer.on("update-downloaded", handleUpdateDownloaded)
 
     return () => {
-      window.ipcRenderer.off("update-can-available", handleUpdateAvailable)
-      window.ipcRenderer.off("update-downloaded", handleUpdateDownloaded)
+      window.electron.ipcRenderer.off("update-can-available", handleUpdateAvailable)
+      window.electron.ipcRenderer.off("update-downloaded", handleUpdateDownloaded)
     }
   }, [handleUpdateAvailable])
 

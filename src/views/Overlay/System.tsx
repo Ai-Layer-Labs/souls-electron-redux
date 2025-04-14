@@ -17,13 +17,13 @@ const System = () => {
   const [minimalToTray, setMinimalToTray] = useState(false)
 
   useEffect(() => {
-    window.ipcRenderer.getAutoLaunch().then(setAutoLaunch)
-    window.ipcRenderer.getMinimalToTray().then(setMinimalToTray)
+    window.electron.ipcRenderer.getAutoLaunch().then(setAutoLaunch)
+    window.electron.ipcRenderer.getMinimalToTray().then(setMinimalToTray)
   }, [])
 
   const handleAutoLaunchChange = (value: boolean) => {
     setAutoLaunch(value)
-    window.ipcRenderer.setAutoLaunch(value)
+    window.electron.ipcRenderer.setAutoLaunch(value)
   }
 
   const languageOptions = [
@@ -64,7 +64,7 @@ const System = () => {
 
   const handleMinimalToTrayChange = (value: boolean) => {
     setMinimalToTray(value)
-    window.ipcRenderer.setMinimalToTray(value)
+    window.electron.ipcRenderer.setMinimalToTray(value)
   }
 
   return (
