@@ -1,0 +1,3 @@
+[submodule "submodules/jinni"]
+	path = submodules/jinni
+	url = https://github.com/smat-dev/jinni.git

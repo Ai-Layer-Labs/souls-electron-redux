@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "types/*": ["src/types/*"],
+      "utils/*": ["src/utils/*"],
+      "providers/*": ["src/providers/*"],
+      "stores/*": ["src/stores/*"],
+      "intellichat/*": ["src/intellichat/*"],
+      "@modelcontextprotocol/*": ["node_modules/@modelcontextprotocol/*"],
+      "vendors/*": ["src/vendors/*"],
+      "consts": ["src/consts.ts"]
+    }
+  }
+} 
