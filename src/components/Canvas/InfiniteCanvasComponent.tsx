@@ -157,24 +157,12 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
 
   return (
     <div className="w-full h-full">
-      <h1>canvas page</h1>
-      <pre>
-        {JSON.stringify(contentData, null, 2)}
-        <br />
-        {JSON.stringify(tldrawKey, null, 2)}
-        <br />
-        {JSON.stringify(persistenceKey, null, 2)}
-        <br />
-        {/* {JSON.stringify(initialSnapshot, null, 2)} */}
-        {JSON.stringify(handleMount, null, 2)}
-
-      </pre>
       <Tldraw
-      // key={tldrawKey} // Force re-mount on chat change
-      // persistenceKey={persistenceKey} // Let tldraw handle load/save via this key
-      // snapshot={initialSnapshot} // Remove explicit snapshot, let tldraw load from persistenceKey
-      // onMount={handleMount}
-      // autoFocus
+        key={tldrawKey} // Force re-mount on chat change
+        persistenceKey={persistenceKey} // Let tldraw handle load/save via this key
+        // snapshot={initialSnapshot} // Remove explicit snapshot, let tldraw load from persistenceKey
+        onMount={handleMount}
+        autoFocus
       />
     </div>
   );

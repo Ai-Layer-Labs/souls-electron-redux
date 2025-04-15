@@ -3,7 +3,6 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
 import SidePanel from './SidePanel';
-import './SidePanel.css';
 import { useAtom, useSetAtom } from 'jotai'
 import { codeStreamingAtom } from '../../atoms/codeStreaming'
 import useHotkeyEvent from "../../hooks/useHotkeyEvent"
@@ -415,12 +414,15 @@ const ChatWindow = () => {
   }
 
   return (
-    <div className={`chat-page ${isPanelOpen ? 'panel-open' : ''}`}>
-      <button className="panel-toggle-button" onClick={togglePanel}>
+    <div className={`flex h-screen w-full overflow-x-hidden ${isPanelOpen ? 'panel-open' : ''}`}>
+      <button
+        className="fixed right-[15px] flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-base shadow-md cursor-pointer z-[1001] transition-colors dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
+        onClick={togglePanel}
+      >
         {isPanelOpen ? '>' : '<'}
       </button>
 
-      <div className="chat-container">
+      <div className="flex-grow h-full flex flex-col">
         <div className="chat-window">
           <ChatMessages
             messages={messages}

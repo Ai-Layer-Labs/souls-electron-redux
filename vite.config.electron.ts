@@ -2,6 +2,7 @@ import { rmSync } from 'node:fs'
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import electron from 'vite-plugin-electron/simple'
 import pkg from './package.json'
 import jotaiDebugLabel from 'jotai/babel/plugin-debug-label'
@@ -77,7 +78,8 @@ export default defineConfig(({ command }) => {
       exclude: ['services/__tests__']
     },
     plugins: [
-      react({babel: { plugins: [jotaiDebugLabel, jotaiReactRefresh] }}),
+      react({ babel: { plugins: [jotaiDebugLabel, jotaiReactRefresh] } }),
+      tailwindcss(),
       electron({
         main: {
           // Shortcut of `build.lib.entry`
