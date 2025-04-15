@@ -14,6 +14,15 @@ const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, chatId }) => {
     <div className={`side-panel ${isOpen ? "open" : ""}`}>
       <button className="close-button" onClick={onClose}>×</button>
       {/* Content of the side panel will go here */}
+      sample buttons
+      <button onClick={() => {
+        window.electron.ipcRenderer.send('open-canvas', chatId);
+      }}>Open Canvas</button>
+
+      <button onClick={() => {
+        window.electron.ipcRenderer.send('open-canvas', chatId);
+      }}>Open Canvas</button>
+
       <Canvas chatId={chatId} />
     </div>
   );

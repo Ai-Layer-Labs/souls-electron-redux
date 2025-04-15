@@ -40,7 +40,7 @@ const ContentRouter: React.FC<ContentRouterProps> = ({ contentType, data }) => {
     case 'web-content':
       return <WebComponent data={data} />;
     case 'canvas':
-      return <InfiniteCanvasComponent />;
+      return <InfiniteCanvasComponent data={data} />;
     default:
       return (
         <div className="w-full h-full flex items-center justify-center">

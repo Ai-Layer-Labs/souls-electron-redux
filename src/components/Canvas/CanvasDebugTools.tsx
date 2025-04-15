@@ -89,6 +89,8 @@ const CanvasDebugTools: React.FC<CanvasDebugToolsProps> = ({ chatId }) => {
   const [show3DTest, setShow3DTest] = useState(false);
 
   const handleContentTypeSelect = (type: CanvasContentType) => {
+    console.log("handleContentTypeSelect", type)
+    console.log("handleContentTypeSelect", contentSamples[type])
     setContent(chatId, type, contentSamples[type]);
   };
 

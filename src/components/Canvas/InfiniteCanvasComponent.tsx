@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Tldraw, useEditor, TLDocument, TLShape, TLEditorSnapshot, TLTextShape, Editor, createShapeId } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
-// import { CanvasContentData } from './CanvasStore'; // No longer directly needed for chat data
+import { CanvasContentData } from './CanvasStore'; // No longer directly needed for chat data
 import { useAtomValue } from 'jotai'; // Import Jotai hook
 import { currentChatIdAtom } from '../../atoms/chatState'; // Import Jotai atom
 import useCanvasStore from './CanvasStore';
@@ -9,7 +9,7 @@ import { debounce } from 'lodash';
 
 interface InfiniteCanvasComponentProps {
   // data prop might be deprecated if we solely rely on chatStore
-  // data: CanvasContentData;
+  data: CanvasContentData;
 }
 
 const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ data }*/) => {
@@ -93,6 +93,7 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
 
   // Callback for when the editor mounts
   const handleMount = useCallback((editor: Editor) => {
+    console.log("handleMount", editor)
     editorRef.current = editor;
 
     // Set up drop handling
@@ -156,12 +157,24 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
 
   return (
     <div className="w-full h-full">
+      <h1>canvas page</h1>
+      <pre>
+        {JSON.stringify(contentData, null, 2)}
+        <br />
+        {JSON.stringify(tldrawKey, null, 2)}
+        <br />
+        {JSON.stringify(persistenceKey, null, 2)}
+        <br />
+        {/* {JSON.stringify(initialSnapshot, null, 2)} */}
+        {JSON.stringify(handleMount, null, 2)}
+
+      </pre>
       <Tldraw
-        key={tldrawKey} // Force re-mount on chat change
-        persistenceKey={persistenceKey} // Let tldraw handle load/save via this key
-        // snapshot={initialSnapshot} // Remove explicit snapshot, let tldraw load from persistenceKey
-        onMount={handleMount}
-        autoFocus
+      // key={tldrawKey} // Force re-mount on chat change
+      // persistenceKey={persistenceKey} // Let tldraw handle load/save via this key
+      // snapshot={initialSnapshot} // Remove explicit snapshot, let tldraw load from persistenceKey
+      // onMount={handleMount}
+      // autoFocus
       />
     </div>
   );
