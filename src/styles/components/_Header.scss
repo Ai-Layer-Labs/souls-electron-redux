@@ -1,11 +1,12 @@
 @use "../_variables" as *;
 
 .outlet-container {
-  > .app-header {
+  >.app-header {
     position: absolute;
     left: 0;
     width: 100%;
     transition: width $transition-normal ease, left $transition-normal ease;
+    z-index: 1;
 
     &.sidebar-visible {
       width: calc(100% + $sidebar-width);
@@ -65,7 +66,8 @@
     font-size: 20px;
   }
 
-  .menu-btn, .help-btn {
+  .menu-btn,
+  .help-btn {
     background: none;
     border: none;
     cursor: pointer;

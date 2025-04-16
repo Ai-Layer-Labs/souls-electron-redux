@@ -21,7 +21,7 @@ if (window.electron.ipcRenderer) {
 }
 
 window.addEventListener('contextmenu', (e) => {
-  e.preventDefault()
+  // e.preventDefault()
   const selection = window.getSelection()?.toString()
 
   if (selection) {

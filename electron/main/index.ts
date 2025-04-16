@@ -19,7 +19,7 @@ import { store } from "./store"
 import { initProtocol } from "./protocol"
 import * as KnowledgeStore from "./knowledge-store"
 import * as logging from "./ipc/logging"
-
+import contextMenu from "electron-context-menu"
 // Get the directory path
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -194,7 +194,7 @@ const indexHtml = path.join(RENDERER_DIST, "index.html")
 
 async function registerEssentialIpcHandlers() {
   console.log('Registering essential IPC handlers directly');
-  
+
   // Register system:openScriptsDir handler
   ipcMain.handle("system:openScriptsDir", async () => {
     try {
@@ -209,7 +209,7 @@ async function registerEssentialIpcHandlers() {
       return { success: false, error: String(error) };
     }
   });
-  
+
   // Register util:fillPathToConfig handler
   ipcMain.handle("util:fillPathToConfig", async (_event, config) => {
     try {
@@ -240,9 +240,14 @@ async function onReady() {
   initMCPClient()
   initProtocol()
   createWindow()
-
   // Register critical handlers early
   registerEssentialIpcHandlers()
+
+  contextMenu({
+    window: win, // Pass the window object
+    showInspectElement: true // Explicitly enable inspect element
+  });
+
 }
 
 async function createWindow() {

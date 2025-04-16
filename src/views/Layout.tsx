@@ -20,7 +20,7 @@ const Layout = () => {
       <div className="app-content">
         {!isConfigNotInitialized && <HistorySidebar />}
         <div className="outlet-container">
-          {!isConfigNotInitialized && <Header showHelpButton showModelSelect />}
+          {!isConfigNotInitialized && <Header showModelSelect />}
           <Outlet />
         </div>
         <CodeModal />
