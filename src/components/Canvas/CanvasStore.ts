@@ -51,7 +51,9 @@ export interface CanvasContentData {
     calendar?: string;
     id?: string;
   }>; // For calendar events
-  [key: string]: any; // Flexible for future content types
+  droppedText?: string; // For text dropped onto the canvas
+  timestamp?: number; // Timestamp for when the content was created/dropped
+  [key: string]: unknown; // Flexible for future content types
 }
 
 // State interface for the canvas store
@@ -65,6 +67,7 @@ interface CanvasState {
   clearContent: () => void;
   setVisibility: (visible: boolean) => void;
   setWidth: (width: number) => void;
+  setDroppedText: (text: string) => void; // Add method to set dropped text
 }
 
 // Default content data
@@ -98,7 +101,15 @@ const useCanvasStore = create<CanvasState>((set) => ({
 
   setWidth: (width) => set({
     width: width
-  })
+  }),
+  
+  setDroppedText: (text) => set((state) => ({
+    contentData: {
+      ...state.contentData,
+      droppedText: text,
+      timestamp: Date.now()
+    }
+  }))
 }));
 
 export default useCanvasStore;

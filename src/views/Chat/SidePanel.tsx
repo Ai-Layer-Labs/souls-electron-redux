@@ -10,6 +10,9 @@ interface SidePanelProps {
 }
 
 const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, chatId }) => {
+  // Determine if this is a new chat or an existing chat
+  const isNewChat = !chatId;
+  
   return (
     <div
       className={`
@@ -26,15 +29,24 @@ const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, chatId }) => {
       >
         ×
       </button>
+      <div className="mb-2 text-lg font-medium">
+        {isNewChat 
+          ? "New Chat Canvas" 
+          : `Canvas for Chat: ${chatId.substring(0, 8)}...`}
+      </div>
       <NewCanvas chatId={chatId} />
     </div>
   );
 };
 
 const NewCanvas: React.FC<{ chatId: string }> = ({ chatId }) => {
-  console.log("chatId", chatId)
   const contentData = useCanvasStore((state) => state.contentData);
-  console.log("contentData", contentData)
+  
+  // Log when canvas is mounted for a specific chat
+  React.useEffect(() => {
+    console.log(`Canvas mounted for chat ID: ${chatId || 'new chat'}`);
+  }, [chatId]);
+  
   return (
     <div className="flex flex-col h-full">
       <InfiniteCanvasComponent data={contentData} />
