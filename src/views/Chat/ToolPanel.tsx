@@ -42,7 +42,8 @@ function formatJSON(jsonString: string): string {
   try {
     const parsed = JSON.parse(jsonString.trim())
     return JSON.stringify(parsed, null, 2)
-  } catch (e) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_e) {
     return jsonString
   }
 }
@@ -73,11 +74,81 @@ const Code = ({ content }: { content: string }) => {
   )
 }
 
+// Define an interface for the items within the result content array
+interface ToolResultContentItem {
+  type: "image" | "text"
+  data?: string // Base64 data for image
+  mimeType?: string // Mime type for image
+  text?: string // Text content
+}
+
+// Component to render individual result items (text or image)
+const ResultItem = ({ item }: { item: ToolResultContentItem }) => {
+  if (item.type === "image" && item.data && item.mimeType) {
+    // Check if data is already a data URL or needs prefix
+    const src = item.data.startsWith("data:") ? item.data : `data:${item.mimeType};base64,${item.data}`
+    return <img src={src} alt="Tool generated image" style={{ maxWidth: "100%", maxHeight: "400px", marginTop: "10px" }} />
+  } else if (item.type === "text" && item.text) {
+    // Try formatting the text as JSON, otherwise display raw
+    let contentToDisplay = item.text
+    try {
+      const parsedText = JSON.parse(item.text.trim())
+      contentToDisplay = JSON.stringify(parsedText, null, 2)
+      // If it's JSON, display in a code block for better readability
+      return <Code content={contentToDisplay} />
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
+      // Not JSON, display as plain text
+      return <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", margin: "10px 0" }}>{contentToDisplay}</pre>
+    }
+  }
+  return null // Or some fallback UI for unknown types
+}
+
+// New logic to render results, checking for image/text structure
+const renderResult = (resultString: string, index: number, totalResults: number) => {
+  try {
+    const decodedResult = safeBase64Decode(resultString)
+    const parsedResult = JSON.parse(decodedResult.trim())
+
+    if (parsedResult && Array.isArray(parsedResult.content)) {
+      return (
+        <div key={index} className="result-block">
+          <span>Results{totalResults > 1 ? ` ${index + 1}` : ""}:</span>
+          {parsedResult.content.map((item: ToolResultContentItem, itemIndex: number) => (
+            <ResultItem key={itemIndex} item={item} />
+          ))}
+        </div>
+      )
+    } else {
+      // Fallback: Not the expected structure, format as JSON code
+      const formatted = formatJSON(decodedResult)
+      return (
+        <div key={index} className="result-block">
+         <span>Results{totalResults > 1 ? ` ${index + 1}` : ""}:</span>
+         <Code content={formatted} />
+        </div>
+      )
+    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_e) {
+    // Fallback: Not JSON or other error, format the original (decoded) string as JSON code
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // console.error("Error parsing or rendering tool result:", _e)
+    const formatted = formatJSON(safeBase64Decode(resultString)) // Format the decoded string
+     return (
+        <div key={index} className="result-block">
+         <span>Results{totalResults > 1 ? ` ${index + 1}` : ""}:</span>
+         <Code content={formatted} />
+        </div>
+      )
+  }
+}
+
 const ToolPanel: React.FC<ToolPanelProps> = ({ content, name }) => {
   const { t } = useTranslation()
   const { calls, results } = useMemo(() => getToolResult(content), [content])
   const formattedCalls = useMemo(() => formatJSON(safeBase64Decode(calls)), [calls])
-  const formattedResults = useMemo(() => results.map(result => formatJSON(safeBase64Decode(result))), [results])
 
   if (!content || !content.startsWith(callStr)) {
     return <></>
@@ -93,14 +164,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({ content, name }) => {
         <Code content={formattedCalls} />
 
         {results.length > 0 && (
-          <>
-            {formattedResults.map((result, index) => (
-              <>
-                <span>Results{formattedResults.length > 1 ? ` ${index + 1}` : ""}:</span>
-                <Code key={index} content={result} />
-              </>
-            ))}
-          </>
+           results.map((result, index) => renderResult(result, index, results.length))
         )}
       </div>
     </details>

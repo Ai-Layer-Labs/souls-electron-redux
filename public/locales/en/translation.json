@@ -32,6 +32,11 @@
     "unsupportTools": "{{model}} does not support Tool Calls",
     "dragFiles": "Drop files here to add to chat"
   },
+  "canvas": {
+    "imageAdded": "Image added to canvas",
+    "multipleImagesAdded": "{{count}} images added to canvas",
+    "newCanvas": "Started new canvas"
+  },
   "welcome": {
     "title": "Welcome to Souls",
     "subtitle": "Powered by THINK",

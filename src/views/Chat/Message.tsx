@@ -16,6 +16,8 @@ import { useTranslation } from 'react-i18next'
 import { themeAtom } from "../../atoms/themeState";
 import Textarea from "../../components/WrappedTextarea"
 import { isChatStreamingAtom } from "../../atoms/chatState"
+import { addImageToCanvas } from "../../components/Canvas/InfiniteCanvasComponent"
+import { showToastAtom } from "../../atoms/toastState"
 
 declare global {
   namespace JSX {
@@ -40,6 +42,14 @@ interface MessageProps {
   onEdit: (editedText: string) => void
 }
 
+// Helper function to detect image URLs in text
+const detectImageUrls = (text: string): string[] => {
+  // Regular expression to match image URLs
+  // Looks for URLs ending with image extensions or image data URLs
+  const imageRegex = /https?:\/\/\S+\.(jpg|jpeg|png|gif|webp|svg)(\?[^"'<>\s]+)?|data:image\/(jpeg|png|gif|webp);base64,[a-zA-Z0-9+/=]+/gi;
+  return text.match(imageRegex) || [];
+};
+
 const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, onEdit }: MessageProps) => {
   const { t } = useTranslation()
   const [theme] = useAtom(themeAtom)
@@ -50,6 +60,8 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
   const [content, setContent] = useState(text)
   const [editedText, setEditedText] = useState(text)
   const isChatStreaming = useAtomValue(isChatStreamingAtom)
+  const showToast = useSetAtom(showToastAtom)
+  const processedImagesRef = useRef(new Set<string>())
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
@@ -131,6 +143,42 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
       ))
     }
 
+    // For agent responses, detect and add images to canvas
+    if (!isSent && !isLoading && window.canvasEditor) {
+      const imageUrls = detectImageUrls(_text);
+      if (imageUrls.length > 0) {
+        // Add images to canvas with slight delay to ensure everything is rendered
+        setTimeout(() => {
+          let addedCount = 0;
+          imageUrls.forEach((url, index) => {
+            // Skip already processed images
+            if (processedImagesRef.current.has(url)) return;
+            processedImagesRef.current.add(url);
+            
+            // Stagger image placement slightly for multiple images
+            setTimeout(() => {
+              addImageToCanvas(window.canvasEditor, url)
+                .then((success) => {
+                  if (success) {
+                    addedCount++;
+                    console.log(`Added image ${index + 1}/${imageUrls.length} to canvas:`, url);
+                    // Show a toast only for the first image or when all are processed
+                    if (addedCount === 1 || addedCount === imageUrls.length) {
+                      showToast({
+                        message: imageUrls.length > 1 
+                          ? t("canvas.multipleImagesAdded", { count: imageUrls.length })
+                          : t("canvas.imageAdded"),
+                        type: "info"
+                      });
+                    }
+                  }
+                });
+            }, index * 200);
+          });
+        }, 500);
+      }
+    }
+
     return (
       <ReactMarkdown
         remarkPlugins={[[remarkMath, {
@@ -164,13 +212,31 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
             )
           },
           img({className, src, alt}) {
-            let imageSrc = src
+            let imageSrc = src;
             if (src?.startsWith("https://localfile")) {
               let path = src.replace("https://localfile", "").replace(/\\/g, "/")
               if (path === decodeURI(path)) {
                 path = encodeURI(path)
               }
               imageSrc = `local-file:///${path}`
+            }
+
+            // If this is an agent response (not sent by user), add image to canvas
+            if (!isSent && window.canvasEditor && !processedImagesRef.current.has(imageSrc)) {
+              processedImagesRef.current.add(imageSrc);
+              // Add the image to canvas on next tick to ensure UI renders first
+              setTimeout(() => {
+                addImageToCanvas(window.canvasEditor, imageSrc)
+                  .then((success) => {
+                    if (success) {
+                      console.log("Added image to canvas:", imageSrc);
+                      showToast({
+                        message: t("canvas.imageAdded"),
+                        type: "info"
+                      });
+                    }
+                  });
+              }, 500);
             }
 
             return <img src={imageSrc} alt={alt} className={className} />
