@@ -88,11 +88,11 @@ const Canvas: React.FC<CanvasProps> = ({ chatId }) => {
         </div>
 
         {/* Always show debug tools in development mode */}
-        {isDev && (
+        {/* {isDev && (
           <div className="canvas-debug-toolbar p-2 border-b">
             <CanvasDebugTools chatId={chatId} />
           </div>
-        )}
+        )} */}
 
         <div className="canvas-content">
           <ContentRouter contentType={contentType} data={contentData} />

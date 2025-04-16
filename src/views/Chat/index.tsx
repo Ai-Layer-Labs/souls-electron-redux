@@ -3,7 +3,6 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
 import SidePanel from './SidePanel';
-import './SidePanel.css';
 import { useAtom, useSetAtom } from 'jotai'
 import { codeStreamingAtom } from '../../atoms/codeStreaming'
 import useHotkeyEvent from "../../hooks/useHotkeyEvent"
@@ -27,7 +26,7 @@ const ChatWindow = () => {
   const { chatId } = useParams()
   const location = useLocation()
   const [messages, setMessages] = useState<Message[]>([])
-  const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [isPanelOpen, setIsPanelOpen] = useState(true)
   const currentId = useRef(0)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const currentChatId = useRef<string | null>(null)
@@ -42,6 +41,7 @@ const ChatWindow = () => {
   const toolCallResults = useRef<string>("")
   const toolResultCount = useRef(0)
   const toolResultTotal = useRef(0)
+  const isNewChat = useRef<boolean>(false)
 
   const loadChat = useCallback(async (id: string) => {
     try {
@@ -91,8 +91,32 @@ const ChatWindow = () => {
     if (chatId && chatId !== currentChatId.current) {
       loadChat(chatId)
       setCurrentChatId(chatId)
+      
+      if (isNewChat.current) {
+        setIsPanelOpen(true)
+        isNewChat.current = false
+      }
     }
   }, [chatId, loadChat, setCurrentChatId])
+
+  useEffect(() => {
+    if (!chatId) {
+      isNewChat.current = true;
+      // Force re-creation of TLDraw component for a new chat by setting a temporary chat ID
+      setCurrentChatId(''); // Clear the current chat ID to force new canvas creation
+    }
+  }, [chatId, setCurrentChatId]);
+
+  // Make sure we're setting the chat ID atom for new chats
+  useEffect(() => {
+    // When navigating away from a chat (to root or new chat route)
+    if (!chatId && currentChatId.current) {
+      // Signal that we're starting a new chat
+      console.log("Navigating to new chat from:", currentChatId.current);
+      // Clear the current chat ID atom to trigger canvas reset
+      setCurrentChatId("");
+    }
+  }, [chatId, setCurrentChatId]);
 
   const scrollToBottom = useCallback(() => {
     if (chatContainerRef.current) {
@@ -102,6 +126,11 @@ const ChatWindow = () => {
 
   const onSendMsg = useCallback(async (msg: string, files?: FileList) => {
     if (isChatStreaming) return
+
+    // For a new chat, make sure to open the panel to show the fresh canvas
+    if (!currentChatId.current) {
+      setIsPanelOpen(true);
+    }
 
     const formData = new FormData()
     if (msg)
@@ -324,6 +353,7 @@ const ChatWindow = () => {
               case "chat_info":
                 document.title = `${data.content.title} - Souls`
                 currentChatId.current = data.content.id
+                setCurrentChatId(data.content.id)
                 navigate(`/chat/${data.content.id}`, { replace: true })
                 break
 
@@ -415,12 +445,16 @@ const ChatWindow = () => {
   }
 
   return (
-    <div className={`chat-page ${isPanelOpen ? 'panel-open' : ''}`}>
-      <button className="panel-toggle-button" onClick={togglePanel}>
+    <div className={`flex h-screen w-full overflow-x-hidden ${isPanelOpen ? 'panel-open' : ''}`}>
+      <button
+        className="fixed right-[15px] flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-base shadow-md cursor-pointer z-[1001] transition-colors dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
+        onClick={togglePanel}
+        title={isPanelOpen ? "Hide Canvas" : "Show Canvas"}
+      >
         {isPanelOpen ? '>' : '<'}
       </button>
 
-      <div className="chat-container">
+      <div className="flex-grow h-full flex flex-col">
         <div className="chat-window">
           <ChatMessages
             messages={messages}

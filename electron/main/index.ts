@@ -172,7 +172,7 @@ ipcMain.handle('knowledge-base:create', async (_event, name: string, description
 ipcMain.handle('knowledge-base:get-chunks', async (_event, knowledgeBaseId: number) => {
   console.log(`Direct knowledge-base:get-chunks handler invoked: ${knowledgeBaseId}`);
   const documents = KnowledgeStore.getDocumentsForCollection(knowledgeBaseId);
-  
+
   // For simplicity, just return the documents as chunks
   const chunks = documents.map(doc => ({
     id: `chunk-${doc.id}`,
@@ -182,7 +182,7 @@ ipcMain.handle('knowledge-base:get-chunks', async (_event, knowledgeBaseId: numb
       documentName: doc.name
     }
   }));
-  
+
   return chunks;
 });
 
@@ -231,6 +231,7 @@ async function createWindow() {
   // resolve cors
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
+      console.log("onBeforeSendHeaders", details.requestHeaders)
       callback({ requestHeaders: { ...details.requestHeaders, Origin: '*' } });
     },
   );
@@ -239,7 +240,7 @@ async function createWindow() {
     callback({
       responseHeaders: {
         ...details.responseHeaders,
-        'Access-Control-Allow-Origin': ['*'],
+        // 'Access-Control-Allow-Origin': ['*'],
         'Access-Control-Allow-Credentials': ['true'],
         'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         'Access-Control-Allow-Headers': ['Content-Type', 'Authorization'],
