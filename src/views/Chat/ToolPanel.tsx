@@ -111,7 +111,16 @@ const renderResult = (resultString: string, index: number, totalResults: number)
     const decodedResult = safeBase64Decode(resultString)
     const parsedResult = JSON.parse(decodedResult.trim())
 
-    if (parsedResult && Array.isArray(parsedResult.content)) {
+    // Check if the parsed result itself is a single ToolResultContentItem
+    if (parsedResult && (parsedResult.type === "image" || parsedResult.type === "text")) {
+      return (
+        <div key={index} className="result-block">
+          <span>Results{totalResults > 1 ? ` ${index + 1}` : ""}:</span>
+          <ResultItem item={parsedResult as ToolResultContentItem} />
+        </div>
+      )
+    // Check if it has the expected structure with a content array
+    } else if (parsedResult && Array.isArray(parsedResult.content)) {
       return (
         <div key={index} className="result-block">
           <span>Results{totalResults > 1 ? ` ${index + 1}` : ""}:</span>

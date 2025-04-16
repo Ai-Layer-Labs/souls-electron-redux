@@ -23,7 +23,7 @@ declare global {
   namespace JSX {
     interface IntrinsicElements {
       "tool-call": {
-        children: any
+        children: React.ReactNode
         name: string
       };
     }
@@ -41,14 +41,6 @@ interface MessageProps {
   onRetry: () => void
   onEdit: (editedText: string) => void
 }
-
-// Helper function to detect image URLs in text
-const detectImageUrls = (text: string): string[] => {
-  // Regular expression to match image URLs
-  // Looks for URLs ending with image extensions or image data URLs
-  const imageRegex = /https?:\/\/\S+\.(jpg|jpeg|png|gif|webp|svg)(\?[^"'<>\s]+)?|data:image\/(jpeg|png|gif|webp);base64,[a-zA-Z0-9+/=]+/gi;
-  return text.match(imageRegex) || [];
-};
 
 const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, onEdit }: MessageProps) => {
   const { t } = useTranslation()
@@ -143,42 +135,6 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
       ))
     }
 
-    // For agent responses, detect and add images to canvas
-    if (!isSent && !isLoading && window.canvasEditor) {
-      const imageUrls = detectImageUrls(_text);
-      if (imageUrls.length > 0) {
-        // Add images to canvas with slight delay to ensure everything is rendered
-        setTimeout(() => {
-          let addedCount = 0;
-          imageUrls.forEach((url, index) => {
-            // Skip already processed images
-            if (processedImagesRef.current.has(url)) return;
-            processedImagesRef.current.add(url);
-            
-            // Stagger image placement slightly for multiple images
-            setTimeout(() => {
-              addImageToCanvas(window.canvasEditor, url)
-                .then((success) => {
-                  if (success) {
-                    addedCount++;
-                    console.log(`Added image ${index + 1}/${imageUrls.length} to canvas:`, url);
-                    // Show a toast only for the first image or when all are processed
-                    if (addedCount === 1 || addedCount === imageUrls.length) {
-                      showToast({
-                        message: imageUrls.length > 1 
-                          ? t("canvas.multipleImagesAdded", { count: imageUrls.length })
-                          : t("canvas.imageAdded"),
-                        type: "info"
-                      });
-                    }
-                  }
-                });
-            }, index * 200);
-          });
-        }, 500);
-      }
-    }
-
     return (
       <ReactMarkdown
         remarkPlugins={[[remarkMath, {
@@ -188,13 +144,16 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
         rehypePlugins={[rehypeKatex, rehypeRaw]}
         components={{
           "tool-call"({children, name}) {
-            let content = children
-            if (typeof children !== "string") {
-              if (!Array.isArray(children) || children.length === 0 || typeof children[0] !== "string") {
-                return <></>
-              }
-
-              content = children[0]
+            let content: string | undefined = undefined;
+            if (typeof children === "string") {
+              content = children;
+            } else if (Array.isArray(children) && children.length > 0 && typeof children[0] === "string") {
+              content = children[0];
+            }
+            
+            if (content === undefined) {
+              console.error("Could not extract string content from tool-call children:", children);
+              return <></>;
             }
 
             return (
@@ -205,9 +164,21 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
             )
           },
           a(props) {
+            const { children, href, ...rest } = props;
+            // Regex to check if href is an image URL (ends with extension or is data URI)
+            const imageRegex = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
+            const isDataUri = href?.startsWith('data:image');
+
+            if (href && (imageRegex.test(href) || isDataUri)) {
+              // It's an image link, render an img tag using the existing img component renderer logic
+              // We pass the necessary props expected by our custom img renderer
+              return <img src={href} alt={children?.toString() || 'Linked Image'} />; 
+            }
+            
+            // It's a regular link
             return (
-              <a href={props.href} target="_blank" rel="noreferrer">
-                {props.children}
+              <a href={href} target="_blank" rel="noreferrer" {...rest}>
+                {children}
               </a>
             )
           },
@@ -309,7 +280,7 @@ const Message = ({ messageId, text, isSent, files, isError, isLoading, onRetry, 
           }
         }}
       >
-        {_text.replaceAll("file://", "https://localfile")}
+        {_text}
       </ReactMarkdown>
     )
   }, [content, text, isSent, isLoading])
