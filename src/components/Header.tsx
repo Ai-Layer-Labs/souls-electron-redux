@@ -25,12 +25,12 @@ const Header = ({
       <div className="mx-auto px-5 flex items-center justify-between gap-4 mt-[5px]">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-4 whitespace-nowrap">
+            {showModelSelect && <ModelSelect />}
             <Link
               to="/knowledge-base"
               className={`nav-link ${location.pathname === "/knowledge-base" ? "active" : ""}`} >
               Knowledge Base
             </Link>
-            {showModelSelect && <ModelSelect />}
           </div>
         </div>
         <div className="flex items-center">
