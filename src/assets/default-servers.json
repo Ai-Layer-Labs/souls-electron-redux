@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "stagehand": {
+      "command": "stagehand",
+      "args": [],
+      "enabled": true,
+      "isBuiltIn": true
+    },
+    "mcp-server": {
+      "command": "mcp-server",
+      "args": [],
+      "enabled": true,
+      "isBuiltIn": true
+    }
+  }
+} 

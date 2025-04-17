@@ -1,4 +1,4 @@
-// @ts-expect-error jsonlint-mod has no type definitions
+// @ts-ignore
 import jsonlint from "jsonlint-mod"
 import React, { useEffect, useState, useRef, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,7 +11,7 @@ import { systemThemeAtom, themeAtom } from "../../atoms/themeState"
 import { closeOverlayAtom } from "../../atoms/layerState"
 import Switch from "../../components/Switch"
 import { Behavior, useLayer } from "../../hooks/useLayer"
-import { loadToolsAtom, Tool, toolsAtom } from "../../atoms/toolState"
+import { loadToolsAtom, restoreDefaultToolsAtom, Tool, toolsAtom } from "../../atoms/toolState"
 import Tooltip from "../../components/Tooltip"
 
 interface ConfigModalProps {
@@ -208,6 +208,7 @@ const Tools = () => {
   const closeOverlay = useSetAtom(closeOverlayAtom)
   const toolsCacheRef = useRef<ToolsCache>({})
   const loadTools = useSetAtom(loadToolsAtom)
+  const restoreDefaultTools = useSetAtom(restoreDefaultToolsAtom)
 
   useEffect(() => {
     const cachedTools = localStorage.getItem("toolsCache")
@@ -466,6 +467,31 @@ const Tools = () => {
     })
   }, [tools, mcpConfig.mcpServers])
 
+  const handleRestoreDefaults = async () => {
+    setIsLoading(true)
+    try {
+      const result = await restoreDefaultTools()
+      if (result.success) {
+        showToast({
+          message: t("tools.restoreSuccess"),
+          type: "success"
+        })
+      } else {
+        showToast({
+          message: result.message || t("tools.restoreFailed"),
+          type: "error"
+        })
+      }
+    } catch (error) {
+      showToast({
+        message: error instanceof Error ? error.message : t("tools.restoreFailed"),
+        type: "error"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="tools-page overlay-page">
       <button
@@ -525,6 +551,18 @@ const Tools = () => {
                 <img src={"img://reload.svg"} />
               </button>
             </Tooltip>
+
+            <Tooltip content={t("tools.restoreDefaults.alt")}>
+              <button
+                className="restore-btn"
+                onClick={handleRestoreDefaults}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24">
+                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+                {t("tools.restoreDefaults")}
+              </button>
+            </Tooltip>
           </div>
         </div>
 
@@ -536,7 +574,18 @@ const Tools = () => {
                   <svg width="20" height="20" viewBox="0 0 24 24">
                     <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
                   </svg>
-                  <span className="tool-name">{tool.name}</span>
+                  <span className="tool-name">
+                    {tool.name}
+                    {tool.isBuiltIn && (
+                      <Tooltip content={t("tools.builtIn.alt")}>
+                        <span className="built-in-badge">
+                          <svg width="14" height="14" viewBox="0 0 24 24">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+                          </svg>
+                        </span>
+                      </Tooltip>
+                    )}
+                  </span>
                 </div>
                 <div className="tool-switch-container">
                   <Switch

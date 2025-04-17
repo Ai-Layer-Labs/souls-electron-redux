@@ -61,7 +61,7 @@ function initDb(configDir: string) {
 }
 
 async function getFreePort(): Promise<number> {
-  const defaultPort = 61990
+  const defaultPort = 4173
   const isDefaultPortInUse = await isPortInUse(defaultPort)
   if (!isDefaultPortInUse) {
     return defaultPort

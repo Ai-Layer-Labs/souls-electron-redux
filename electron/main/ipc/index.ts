@@ -9,6 +9,8 @@ import { ipcMenuHandler } from "./menu"
 import { setupKnowledgeBaseHandlers } from "./knowledge"
 
 export function ipcHandler(win: BrowserWindow) {
+  console.log('Setting up all IPC handlers');
+  
   let popup: BrowserWindow | null = null
 
   const DEFAULT_TITLE = "Souls"
@@ -113,9 +115,15 @@ export function ipcHandler(win: BrowserWindow) {
     return process.platform
   })
 
-  ipcEnvHandler()
-  ipcSystemHandler(win)
-  ipcUtilHandler()
+  ipcEnvHandler();
+  console.log('Env handlers registered');
+  
+  ipcSystemHandler(win);
+  console.log('System handlers registered');
+  
+  ipcUtilHandler();
+  console.log('Util handlers registered');
+  
   ipcLlmHandler()
   ipcMenuHandler()
   setupKnowledgeBaseHandlers()

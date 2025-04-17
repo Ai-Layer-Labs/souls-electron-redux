@@ -13,6 +13,7 @@ export interface Tool {
   tools?: SubTool[]
   enabled: boolean
   disabled: boolean
+  isBuiltIn?: boolean
 }
 
 export const toolsAtom = atom<Tool[]>([])
@@ -26,6 +27,20 @@ export const loadToolsAtom = atom(
       set(toolsAtom, data.tools)
     }
 
+    return data
+  }
+)
+
+export const restoreDefaultToolsAtom = atom(
+  null,
+  async (get, set) => {
+    const response = await fetch("/api/tools/restore", {
+      method: "POST"
+    })
+    const data = await response.json()
+    if (data.success) {
+      set(toolsAtom, data.tools)
+    }
     return data
   }
 )

@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url"
 import path from "node:path"
 import os from "node:os"
 import dotenv from "dotenv"
+import fs from "node:fs"
 
 // Load environment variables from .env file
 dotenv.config()
@@ -10,13 +11,14 @@ dotenv.config()
 import AppState from "./state"
 import { cleanup, initMCPClient, port } from "./service"
 import { getDarwinSystemPath, modifyPath } from "./util"
-import { binDirList, darwinPathList } from "./constant"
+import { binDirList, darwinPathList, scriptsDir } from "./constant"
 import { update } from "./update"
 import { ipcHandler } from "./ipc/index.js"
 import { initTray } from "./tray"
 import { store } from "./store"
 import { initProtocol } from "./protocol"
 import * as KnowledgeStore from "./knowledge-store"
+import * as logging from "./ipc/logging"
 
 // Get the directory path
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -190,6 +192,37 @@ let win: BrowserWindow | null = null
 const preload = path.join(__dirname, "../preload/index.mjs")
 const indexHtml = path.join(RENDERER_DIST, "index.html")
 
+async function registerEssentialIpcHandlers() {
+  console.log('Registering essential IPC handlers directly');
+  
+  // Register system:openScriptsDir handler
+  ipcMain.handle("system:openScriptsDir", async () => {
+    try {
+      console.log(`Opening scripts directory at: ${scriptsDir}`);
+      if (!fs.existsSync(scriptsDir)) {
+        fs.mkdirSync(scriptsDir, { recursive: true });
+      }
+      await shell.openPath(scriptsDir);
+      return { success: true };
+    } catch (error) {
+      console.error(`Failed to open scripts directory: ${error}`);
+      return { success: false, error: String(error) };
+    }
+  });
+  
+  // Register util:fillPathToConfig handler
+  ipcMain.handle("util:fillPathToConfig", async (_event, config) => {
+    try {
+      console.log('Filling path to config');
+      // Implement the path filling logic here, or delegate to a utility function
+      return config; // This is a placeholder; implement the actual logic
+    } catch (error) {
+      console.error(`Failed to fill path to config: ${error}`);
+      return config;
+    }
+  });
+}
+
 async function onReady() {
   if (process.platform === "win32") {
     binDirList.forEach(modifyPath)
@@ -207,6 +240,9 @@ async function onReady() {
   initMCPClient()
   initProtocol()
   createWindow()
+
+  // Register critical handlers early
+  registerEssentialIpcHandlers()
 }
 
 async function createWindow() {

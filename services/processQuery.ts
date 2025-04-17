@@ -14,6 +14,7 @@ import logger from "./utils/logger.js";
 import { iQueryInput, iStreamMessage, ModelSettings } from "./utils/types.js";
 import { openAIConvertToGeminiTools } from "./utils/toolHandler.js";
 import { ToolDefinition } from "@langchain/core/language_models/base";
+import { adaptToolResponse } from "./utils/toolResponseAdapter.js";
 
 // Map to store abort controllers
 export const abortControllerMap = new Map<string, AbortController>();
@@ -68,7 +69,7 @@ export async function handleProcessQuery(
 
   try {
     // Handle input format
-    let messages: BaseMessage[] = history;
+    const messages: BaseMessage[] = history;
 
     if (!model) {
       throw new Error("Model not initialized");
@@ -142,7 +143,14 @@ export async function handleProcessQuery(
       });
 
       let currentContent = "";
-      let toolCalls: any[] = [];
+      let toolCalls: Array<{
+        id: string;
+        type: string;
+        function: {
+          name: string;
+          arguments: string;
+        };
+      }> = [];
 
       try {
         // Track token usage if available
@@ -154,8 +162,9 @@ export async function handleProcessQuery(
             if (Array.isArray(chunk.content)) {
               // compatible Anthropic response format
               const textContent = chunk.content.find((item) => item.type === "text" || item.type === "text_delta");
-              // @ts-ignore
-              chunkMessage = textContent?.text || "";
+              if (textContent && 'text' in textContent) {
+                chunkMessage = textContent.text;
+              }
             } else {
               chunkMessage = chunk.content;
             }
@@ -272,9 +281,9 @@ export async function handleProcessQuery(
                 let parsedArgs = {}
                 try {
                   parsedArgs = toolCall.function.arguments === "" ? {} : JSON.parse(toolCall.function.arguments);
-                } catch (error) {
+                } catch (_error) {
                   toolCall.function.arguments = "{}";
-                  logger.error(`[${chatId}] Error parsing tool call ${toolCall.function.name} args: ${error}`);
+                  logger.error(`[${chatId}] Error parsing tool call ${toolCall.function.name} args`);
                 }
                 return {
                   type: "tool_use",
@@ -356,7 +365,7 @@ export async function handleProcessQuery(
             }
 
             try {
-              const result = await new Promise<any>((resolve, reject) => {
+              const result = await new Promise<Record<string, unknown>>((resolve, reject) => {
                 const executeToolCall = async () => {
                   try {
                     const abortListener = () => {
@@ -393,15 +402,18 @@ export async function handleProcessQuery(
                 setImmediate(executeToolCall);
               });
 
-              if (result?.isError) logger.error(`[Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
-              else logger.info(`[Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
+              if ('isError' in result && result.isError) {
+                logger.error(`[Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
+              } else {
+                logger.info(`[Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
+              }
 
               onStream?.(
                 JSON.stringify({
                   type: "tool_result",
                   content: {
                     name: toolName,
-                    result: result,
+                    result: adaptToolResponse(result),
                   },
                 } as iStreamMessage)
               );
@@ -409,7 +421,7 @@ export async function handleProcessQuery(
               return {
                 tool_call_id: toolCall.id,
                 role: "tool" as const,
-                content: JSON.stringify(result),
+                content: JSON.stringify(adaptToolResponse(result)),
               };
             } finally {
               if (mainAbortListener && chatId && abortControllerMap.has(chatId)) {

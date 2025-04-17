@@ -56,3 +56,14 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 } */
+
+.built-in-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  color: var(--text-secondary);
+}
+
+.built-in-badge svg {
+  fill: currentColor;
+}

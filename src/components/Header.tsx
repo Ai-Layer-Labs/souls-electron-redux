@@ -1,6 +1,5 @@
 import React from "react"
 import { useSetAtom } from "jotai"
-import { Link, useLocation } from "react-router-dom"
 import { keymapModalVisibleAtom } from "../atoms/modalState"
 import ModelSelect from "./ModelSelect"
 
@@ -11,21 +10,14 @@ type Props = {
 
 const Header = ({ showHelpButton = false, showModelSelect = false }: Props) => {
   const setKeymapModalVisible = useSetAtom(keymapModalVisibleAtom)
-  const location = useLocation()
 
   return (
     <div className={`app-header`}>
       <div className="header-content">
         <div className="left-side">
-          <div className="menu-container">
+          {/* <div className="menu-container">
             {showModelSelect && <ModelSelect />}
-            <Link
-              to="/knowledge-base"
-              className={`nav-link ${location.pathname === "/knowledge-base" ? "active" : ""}`}
-            >
-              Knowledge Base
-            </Link>
-          </div>
+          </div> */}
         </div>
         {showHelpButton && (
           <div className="right-side">

@@ -13,23 +13,34 @@ import {
 import { destroyTray, initTray } from "../tray"
 
 export function ipcSystemHandler(win: BrowserWindow) {
-  logging.info('Setting up system handlers')
+  console.log('Setting up system handlers - explicitly logging');
 
   ipcMain.handle("system:openScriptsDir", async () => {
+    console.log('openScriptsDir handler invoked');
     try {
-      const scriptsDir = path.join(app.getPath('userData'), 'scripts')
+      // Use the scripts directory defined in constants
+      logging.info(`Opening scripts directory at: ${scriptsDir}`)
       
       // Create the directory if it doesn't exist
       if (!fs.existsSync(scriptsDir)) {
+        logging.info(`Scripts directory doesn't exist, creating at: ${scriptsDir}`)
         fs.mkdirSync(scriptsDir, { recursive: true })
       }
       
       // Open the directory
-      await shell.openPath(scriptsDir)
-      return true
+      logging.info(`Attempting to open: ${scriptsDir}`)
+      const result = await shell.openPath(scriptsDir)
+      
+      // Check if there was an error opening the directory
+      if (result !== "") {
+        logging.error(`Error opening scripts directory: ${result}`)
+        throw new Error(result)
+      }
+      
+      return { success: true, path: scriptsDir }
     } catch (error) {
-      logging.error(`Failed to open scripts directory: ${error}`)
-      return false
+      console.error(`Failed to open scripts directory: ${error}`);
+      return { success: false, error: String(error) }
     }
   })
 
