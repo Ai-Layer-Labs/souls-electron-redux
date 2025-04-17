@@ -8,6 +8,7 @@ import { handleWindowResizeAtom } from "./atoms/sidebarState"
 import { systemThemeAtom } from "./atoms/themeState"
 import Updater from "./updater"
 
+
 function App() {
   const [loading, setLoading] = useState(true)
   const loadConfig = useSetAtom(loadConfigAtom)

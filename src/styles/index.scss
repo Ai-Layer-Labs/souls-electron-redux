@@ -1,5 +1,4 @@
 @use "variables" as *;
-@use "./components/Header";
 @use "./components/ModelConfig";
 @use "./components/HistorySidebar";
 @use "./components/Sidebar";
@@ -31,8 +30,8 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   display: flex;
   justify-content: center;
-  background: var(--bg);
-  color: var(--text);
+  // background: var(--bg);
+  // color: var(--text);
 }
 
 #root {
@@ -51,12 +50,6 @@ body {
 .app-content {
   display: flex;
   flex: 1;
-}
-
-.outlet-container {
-  display: flex;
-  flex: 1;
-  position: relative;
 }
 
 .main-container {
