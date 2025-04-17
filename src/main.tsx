@@ -32,7 +32,7 @@ window.addEventListener('contextmenu', (e) => {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <HeroUIProvider className="h-full w-full bg-background text-foreground">
+    <HeroUIProvider className="h-full w-full">
       <App />
     </HeroUIProvider>
   </StrictMode>,

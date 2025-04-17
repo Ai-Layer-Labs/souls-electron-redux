@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
 import SidePanel from './SidePanel';
-import { useAtom, useSetAtom } from 'jotai'
+import { useAtom, useSetAtom, useAtomValue } from 'jotai'
 import { codeStreamingAtom } from '../../atoms/codeStreaming'
 import { useUIStore } from '../../stores/uiStore';
 import useHotkeyEvent from "../../hooks/useHotkeyEvent"
@@ -11,6 +11,8 @@ import { showToastAtom } from "../../atoms/toastState"
 import { useTranslation } from "react-i18next"
 import { currentChatIdAtom, isChatStreamingAtom, lastMessageAtom } from "../../atoms/chatState"
 import { safeBase64Encode } from "../../util"
+import { isConfigNotInitializedAtom } from "../../atoms/configState"
+import Header from "../../components/Header"
 
 interface ToolCall {
   name: string
@@ -24,6 +26,7 @@ interface ToolResult {
 
 
 const ChatWindow = () => {
+  const isConfigNotInitialized = useAtomValue(isConfigNotInitializedAtom)
   const { chatId } = useParams()
   const location = useLocation()
   const [messages, setMessages] = useState<Message[]>([])
@@ -432,26 +435,29 @@ const ChatWindow = () => {
   }, [updateStreamingCode, chatId])
 
   return (
-    <div className={`flex h-screen w-full overflow-x-hidden ${isPanelOpen ? 'panel-open' : ''}`}>
-      <div className="flex-grow h-full flex flex-col">
-        <div className="chat-window">
-          <ChatMessages
-            messages={messages}
-            isLoading={isChatStreaming}
-            onRetry={onRetry}
-            onEdit={onEdit}
-          />
-          <ChatInput
-            onSendMessage={onSendMsg}
-            disabled={isChatStreaming}
-            onAbort={onAbort}
-          />
+    <div className="h-full w-full relative">
+      {!isConfigNotInitialized && <Header showModelSelect />}
+      <div className={`flex h-screen w-full overflow-x-hidden ${isPanelOpen ? 'panel-open' : ''}`}>
+        <div className="flex-grow h-full flex flex-col">
+          <div className="chat-window">
+            <ChatMessages
+              messages={messages}
+              isLoading={isChatStreaming}
+              onRetry={onRetry}
+              onEdit={onEdit}
+            />
+            <ChatInput
+              onSendMessage={onSendMsg}
+              disabled={isChatStreaming}
+              onAbort={onAbort}
+            />
+          </div>
         </div>
-      </div>
 
-      {chatId && (
-        <SidePanel chatId={chatId} isOpen={isPanelOpen} onClose={togglePanel} />
-      )}
+        {chatId && (
+          <SidePanel chatId={chatId} isOpen={isPanelOpen} onClose={togglePanel} />
+        )}
+      </div>
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { useSetAtom } from "jotai"
 import { keymapModalVisibleAtom } from "../atoms/modalState"
 import ModelSelect from "./ModelSelect"
 import { useUIStore } from "../stores/uiStore"
-
+import { Link } from "react-router-dom"
 type Props = {
   showHelpButton?: boolean
   showModelSelect?: boolean
@@ -21,10 +21,15 @@ const Header = ({
   const shouldShowToggleButton = showPanelToggleButton && !isPanelOpen;
 
   return (
-    <div className={`position-absolute left-0 z-10 transition-all duration-300 ease-in-out ${isPanelOpen ? 'w-calc(100% + 300px)' : 'w-full'}`}>
+    <div className={`z-10 absolute top-0 left-0 right-0 transition-all duration-300 ease-in-out ${isPanelOpen ? 'w-calc(100% + 300px)' : 'w-full'}`}>
       <div className="mx-auto px-5 flex items-center justify-between gap-4 mt-[5px]">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-4 whitespace-nowrap">
+            <Link
+              to="/knowledge-base"
+              className={`nav-link ${location.pathname === "/knowledge-base" ? "active" : ""}`} >
+              Knowledge Base
+            </Link>
             {showModelSelect && <ModelSelect />}
           </div>
         </div>

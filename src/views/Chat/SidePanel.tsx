@@ -20,11 +20,11 @@ const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose, chatId }) => {
         flex-shrink-0 h-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100
         shadow-[-2px_0_5px_rgba(0,0,0,0.1)] dark:shadow-[-2px_0_5px_rgba(255,255,255,0.1)]
         transition-all duration-300 ease-in-out rounded-tl-[15px] overflow-hidden
-        flex flex-col relative
+        flex flex-col relative z-20
       `}
     >
       <button
-        className="absolute top-[10px] right-[10px] bg-transparent border-none text-2xl cursor-pointer text-gray-800 dark:text-gray-100 z-[1]"
+        className="absolute top-[10px] right-[10px] bg-transparent border-none text-2xl cursor-pointer text-gray-800 dark:text-gray-100"
         onClick={onClose}
       >
         ×
