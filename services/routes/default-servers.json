@@ -1,0 +1,62 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/johnnyclem/Desktop"
+      ],
+      "enabled": false,
+      "disabled": true
+    },
+    "mcpollinations": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pinkpixel/mcpollinations"
+      ],
+      "enabled": true
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ],
+      "enabled": true
+    },
+    "edgeone-pages-mcp-server": {
+      "command": "npx",
+      "args": [
+        "edgeone-pages-mcp"
+      ],
+      "enabled": true
+    },
+    "thirdweb-mcp": {
+      "command": "thirdweb-mcp",
+      "args": [],
+      "env": {
+        "THIRDWEB_SECRET_KEY": "your thirdweb secret key from dashboard",
+        "THIRDWEB_ENGINE_URL": "(OPTIONAL) your engine url",
+        "THIRDWEB_ENGINE_AUTH_JWT": "(OPTIONAL) your engine auth jwt",
+        "THIRDWEB_ENGINE_BACKEND_WALLET_ADDRESS": "(OPTIONAL) your engine backend wallet address"
+      },
+      "enabled": false
+    },
+    "apple-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "apple-mcp@latest"
+      ],
+      "enabled": false
+    },
+    "coincap": {
+      "command": "npx",
+      "args": [
+        "coincap-mcp"
+      ],
+      "enabled": true
+    }
+  }
+}

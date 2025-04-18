@@ -85,6 +85,7 @@
     "electron-store": "^10.0.1",
     "electron-updater": "^6.3.9",
     "env-paths": "^3.0.0",
+    "ethers": "^5.7.2",
     "eventsource": "^3.0.5",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",

@@ -19,6 +19,7 @@ import { handleUploadFiles } from "./utils/fileHandler.js";
 import logger from "./utils/logger.js";
 import { iQueryInput, iStreamMessage, ModelSettings } from "./utils/types.js";
 import envPaths from "env-paths";
+import { registerENSServer } from "./mcpServer/ensServer.js";
 
 interface FileProcessingResult {
   images: string[];
@@ -44,6 +45,9 @@ export class WebServer {
     this.mcpClient = mcpClient;
     this.promptManager = PromptManager.getInstance();
     this.port = undefined;
+
+    // Register ENS utility as MCP server
+    registerENSServer();
 
     // resolve cors
     this.app.use((req: any, res: any, next: any) => {

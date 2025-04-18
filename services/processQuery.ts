@@ -1,4 +1,4 @@
-import { BaseChatModel, BindToolsInput } from "@langchain/core/language_models/chat_models";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import {
   AIMessage,
   AIMessageChunk,
@@ -14,7 +14,8 @@ import logger from "./utils/logger.js";
 import { iQueryInput, iStreamMessage, ModelSettings } from "./utils/types.js";
 import { openAIConvertToGeminiTools } from "./utils/toolHandler.js";
 import { ToolDefinition } from "@langchain/core/language_models/base";
-import { adaptToolResponse } from "./utils/toolResponseAdapter.js";
+import { adaptToolResponse, convertCamelCaseToKebabCase } from "./utils/toolResponseAdapter.js";
+import { ENSUtility } from './utils/ensUtility.js';
 
 // Map to store abort controllers
 export const abortControllerMap = new Map<string, AbortController>();
@@ -30,6 +31,15 @@ interface TokenUsage {
   totalInputTokens: number;
   totalOutputTokens: number;
   totalTokens: number;
+}
+
+// Define an interface for the tool call chunks to resolve type errors
+interface ToolCallChunk {
+  index?: number;
+  id?: string;
+  name?: string;
+  args?: string;
+  input?: string;
 }
 
 export async function handleProcessQuery(
@@ -186,7 +196,7 @@ export async function handleProcessQuery(
             chunk.tool_call_chunks ||
             (Array.isArray(chunk.content) && chunk.content.some((item) => item.type === "tool_use"))
           ) {
-            let toolCallChunks: any[] = [];
+            let toolCallChunks: ToolCallChunk[] = [];
 
             toolCallChunks = chunk.tool_call_chunks || [];
 
@@ -229,7 +239,7 @@ export async function handleProcessQuery(
                     const parsedArgs = JSON.parse(args);
                     toolCalls[index].function.arguments = JSON.stringify(parsedArgs);
                   }
-                } catch (e) {
+                } catch {
                   // If parsing fails, arguments are not complete, continue accumulating
                 }
               }
@@ -281,7 +291,7 @@ export async function handleProcessQuery(
                 let parsedArgs = {}
                 try {
                   parsedArgs = toolCall.function.arguments === "" ? {} : JSON.parse(toolCall.function.arguments);
-                } catch (_error) {
+                } catch {
                   toolCall.function.arguments = "{}";
                   logger.error(`[${chatId}] Error parsing tool call ${toolCall.function.name} args`);
                 }
@@ -364,6 +374,43 @@ export async function handleProcessQuery(
               }
             }
 
+            // Handle ENS utility tools if needed
+            const ensTools = ['resolve_ens', 'lookup_address'];
+            if (ensTools.includes(toolName)) {
+              try {
+                const ensUtility = ENSUtility.getInstance();
+                const ensClient = ensUtility.createClient();
+                
+                // Use the client's callTool method instead of direct method access
+                const result = await ensClient.callTool({
+                  name: toolName,
+                  arguments: toolArgs
+                });
+                
+                // Log the result
+                logger.info(`[ENS Tool Result] [${toolName}] ${JSON.stringify(result, null, 2)}`);
+                
+                onStream?.(
+                  JSON.stringify({
+                    type: "tool_result",
+                    content: {
+                      name: toolName,
+                      result: adaptToolResponse(result),
+                    },
+                  } as iStreamMessage)
+                );
+                
+                return {
+                  tool_call_id: toolCall.id,
+                  role: "tool" as const,
+                  content: JSON.stringify(adaptToolResponse(result)),
+                };
+              } catch (error) {
+                logger.error(`Error in ENS tool ${toolName}:`, error);
+                throw error;
+              }
+            }
+
             try {
               const result = await new Promise<Record<string, unknown>>((resolve, reject) => {
                 const executeToolCall = async () => {
@@ -379,7 +426,16 @@ export async function handleProcessQuery(
                       const result = await client?.callTool(
                         {
                           name: toolName,
-                          arguments: toolArgs,
+                          // Convert camelCase to kebab-case for tool arguments with error handling
+                          arguments: (() => {
+                            try {
+                              return convertCamelCaseToKebabCase(toolArgs);
+                            } catch (conversionError) {
+                              logger.error(`Error converting tool args to kebab-case: ${conversionError}`);
+                              // Fall back to original args if conversion fails
+                              return toolArgs;
+                            }
+                          })(),
                         },
                         undefined,
                         {

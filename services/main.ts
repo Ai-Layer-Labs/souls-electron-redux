@@ -3,6 +3,7 @@ import { MCPCliClient } from "./client.js";
 import logger from "./utils/logger.js";
 import { DatabaseMode, initDatabase } from "./database/index.js";
 import { SystemCommandManager } from "./syscmd/index.js";
+import { registerENSServer } from "./mcpServer/ensServer.js";
 
 dotenv.config();
 
@@ -39,6 +40,9 @@ async function main() {
         apiUrl: process.env.DATABASE_API_URL,
       }
     );
+
+    // Register the ENS utility server
+    registerENSServer();
 
     // Create and start Web server
     const { WebServer } = await import("./webServer.js");

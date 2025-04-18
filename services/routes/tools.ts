@@ -32,7 +32,7 @@ export function toolsRouter() {
   router.post("/restore", async (req, res) => {
     try {
       // Read default servers configuration
-      const defaultConfigPath = path.join(__dirname, "../../../src/assets/default-servers.json");
+      const defaultConfigPath = path.join(__dirname, "./default-servers.json");
       const defaultConfig = JSON.parse(await fs.readFile(defaultConfigPath, "utf-8"));
 
       // Update config file
