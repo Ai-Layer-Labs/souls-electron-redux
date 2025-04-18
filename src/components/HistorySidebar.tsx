@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { sidebarVisibleAtom } from "../atoms/sidebarState"
 import { historiesAtom, loadHistoriesAtom } from "../atoms/historyState"
 import Header from "./Header"
 import { useTranslation } from "react-i18next"
@@ -15,6 +14,13 @@ import PopupConfirm from "./PopupConfirm"
 import { newVersionAtom } from "../atoms/globalState"
 import UpdateButton from "./UpdateButton"
 import soulsLogo from "../assets/Souls_Logo_Gradient.png"
+import soulsIcon from "../assets/souls-icon.svg"
+import { useSidebarStore } from "../stores/sidebarStore"
+
+// Define a union type for the button properties
+type FooterButton =
+  | { path: string; label: string; icon: React.ReactElement; handler?: never } // Link button
+  | { handler: () => void; label: string; icon: React.ReactElement; path?: never }; // Action button
 
 interface Props {
   onNewChat?: () => void
@@ -61,6 +67,7 @@ const HistorySidebar = ({ onNewChat }: Props) => {
   const newVersion = useAtomValue(newVersionAtom)
   const [currentChatId, setCurrentChatId] = useAtom(currentChatIdAtom)
   const containerRef = useRef<HTMLDivElement>(null)
+  const { collapsed, toggleSidebar } = useSidebarStore()
 
   useEffect(() => {
     loadHistories()
@@ -126,112 +133,107 @@ const HistorySidebar = ({ onNewChat }: Props) => {
     }
   }
 
-  const handleTools = () => {
-    _openOverlay("Tools")
-  }
-
-  const handleStorage = () => {
-    // openOverlay("Storage")
-  }
-
-  const handlePersonas = () => {
-    // openOverlay("Personas")
-  }
-
-  const handleKnowledge = () => {
-    _openOverlay("Knowledge")
-  }
-
-  const handleModels = () => {
-    _openOverlay("Model")
-  }
-
-  const handleSystem = () => {
-    _openOverlay("System")
-  }
+  // Apply the defined type to the array
+  const footerButtons: FooterButton[] = [
+    { label: t("sidebar.knowledge"), path: "/knowledge-base", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 16c1.255 0 2.443-.29 3.5-.804V4.804zM14.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 0114.5 16c1.255 0 2.443-.29 3.5.804v-10A7.968 7.968 0 0014.5 4z"></path></svg> },
+    { label: t("sidebar.personas"), path: "/personas", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"></path></svg> },
+    { label: t("sidebar.storage"), path: "/storage", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 2l7.997 3.884v9.232l-7.997 3.884-7.997-3.884V5.884zM11 13h4v-2h-4v2zm-6 0h4v-2H5v2zm0-4h4V7H5v2zm6 0h4V7h-4v2z"></path></svg> },
+    { label: t("sidebar.tools"), path: "/tools", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V6.236a1 1 0 00-1.447-.894l-4 2A1 1 0 0011 8v9zM5 17a1 1 0 001.447.894l4-2A1 1 0 0011 15V6.236a1 1 0 00-1.447-.894l-4 2A1 1 0 005 8v9z"></path></svg> },
+    { label: t("sidebar.system"), path: "/settings/system", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> },
+    { label: t("sidebar.models"), path: "/settings/model", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" /></svg> },
+  ]
 
   return (
     <>
-      <div className={`history-sidebar`} ref={containerRef}>
-        <div className="history-header">
-          <img src={soulsLogo} alt="Souls Logo" className="sidebar-logo" />
+      <div
+        className={`flex flex-col h-screen text-default-200 border-r border-default-100 transition-all duration-300 ease-in-out ${collapsed ? 'w-20' : 'w-64'
+          }`}
+        ref={containerRef}
+      >
+        <div className={`flex items-center justify-center h-16 px-4 flex-shrink-0 ${collapsed ? '' : 'mb-4'}`}>
+          <img
+            src={collapsed ? soulsIcon : soulsLogo}
+            alt="Souls Logo"
+            className={`transition-opacity duration-300 ${collapsed ? 'h-8 w-8' : 'h-10 max-w-full'}`}
+          />
         </div>
-        <div className="history-list">
+        <div className="flex-grow overflow-y-auto overflow-x-hidden px-4 space-y-2">
           {histories.map(chat => (
             <div
               key={chat.id}
-              className={`history-item ${chat.id === currentChatId ? "active" : ""}`}
+              className={`group flex items-center rounded-md cursor-pointer transition-colors duration-150 ${chat.id === currentChatId
+                ? 'bg-default-900/30'
+                : 'hover:bg-default-900/10'
+                } ${collapsed ? 'justify-center h-12' : 'justify-between p-3'}`}
               onClick={() => loadChat(chat.id)}
+              title={collapsed ? (chat.title || t("chat.untitledChat")) : undefined}
             >
-              <div className="history-content">
-                <div className="history-title">{chat.title || t("chat.untitledChat")}</div>
-                <div className="history-date">
-                  {new Date(chat.createdAt).toLocaleString()}
+              {!collapsed && (
+                <div className="flex-1 min-w-0 mr-2">
+                  <div className="text-sm font-medium text-default-200 truncate">
+                    {chat.title || t("chat.untitledChat")}
+                  </div>
+                  <div className="text-xs text-default-100">
+                    {new Date(chat.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
-              </div>
+              )}
               <button
-                className="delete-btn"
+                className={`flex-shrink-0 text-default-200 hover:text-default-100 transition-opacity duration-150 ${collapsed ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  } ${!collapsed ? 'p-1' : ''}`}
                 onClick={(e) => confirmDelete(e, chat.id)}
                 title={t("chat.deleteChat")}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24">
-                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-                </svg>
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"></path></svg>
               </button>
             </div>
           ))}
         </div>
-        <div className="sidebar-footer">
+        <div className={`flex-shrink-0 p-3 border-t border-default-100 mt-auto ${collapsed ? 'space-y-3' : 'space-y-2'}`}>
           <button
-            className="sidebar-footer-btn"
-            onClick={handleKnowledge}
+            className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 bg-blue-600 text-white hover:bg-blue-500 active:bg-blue-700 ${collapsed ? 'justify-center h-10' : ''}`}
+            onClick={handleNewChat}
+            title={collapsed ? t("chat.newChat") : undefined}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
-            </svg>
-            {t("sidebar.knowledge")}
+            <svg className={`w-5 h-5 ${!collapsed ? 'mr-2' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+            {!collapsed && <span>{t("chat.newChat")}</span>}
           </button>
+          {footerButtons.map((item, index) => (
+            item.path ? (
+              <Link
+                key={index}
+                to={item.path}
+                className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium text-default-200 hover:bg-black/10 hover:text-white transition-colors duration-150 ${collapsed ? 'justify-center h-10' : ''}`}
+                title={collapsed ? item.label : undefined}
+              >
+                <span className={`flex-shrink-0 ${!collapsed ? 'mr-2' : ''}`}>{item.icon}</span>
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            ) : (
+              <button
+                key={index}
+                className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium text-default-200 hover:bg-black/10 hover:text-white transition-colors duration-150 ${collapsed ? 'justify-center h-10' : ''}`}
+                onClick={item.handler}
+                title={collapsed ? item.label : undefined}
+              >
+                <span className={`flex-shrink-0 ${!collapsed ? 'mr-2' : ''}`}>{item.icon}</span>
+                {!collapsed && <span>{item.label}</span>}
+              </button>
+            )
+          ))}
+          <div className={`${collapsed ? 'flex justify-center' : ''} pt-1`}>
+            <UpdateButton />
+          </div>
           <button
-            className="sidebar-footer-btn"
-            onClick={handlePersonas}
+            className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium text-default-200 hover:bg-black/10 hover:text-default-100 transition-colors duration-150 mt-1 ${collapsed ? 'justify-center h-10' : ''}`}
+            onClick={toggleSidebar}
+            title={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
+            <svg className="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
             </svg>
-            {t("sidebar.personas")}
+            {!collapsed && <span className="ml-2">{collapsed ? t("sidebar.expand") : t("sidebar.collapse")}</span>}
           </button>
-          <button
-            className="sidebar-footer-btn"
-            onClick={handleStorage}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
-            </svg>
-            {t("sidebar.storage")}
-          </button>
-          <button
-            className="sidebar-footer-btn"
-            onClick={handleTools}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
-            </svg>
-            {t("sidebar.tools")}
-          </button>
-          <button
-            className="sidebar-footer-btn"
-            onClick={handleSystem}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 22 22" fill="none">
-              <path d="M11 15C13.2091 15 15 13.2091 15 11C15 8.79086 13.2091 7 11 7C8.79086 7 7 8.79086 7 11C7 13.2091 8.79086 15 11 15Z" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" />
-              <path d="M13.5404 2.49103L12.4441 3.94267C11.3699 3.71161 10.2572 3.72873 9.19062 3.99275L8.04466 2.58391C6.85499 2.99056 5.76529 3.64532 4.84772 4.50483L5.55365 6.17806C4.82035 6.99581 4.28318 7.97002 3.98299 9.02659L2.19116 9.31422C1.94616 10.5476 1.96542 11.8188 2.24768 13.0442L4.05324 13.2691C4.38773 14.3157 4.96116 15.27 5.72815 16.0567L5.07906 17.7564C6.02859 18.5807 7.14198 19.1945 8.34591 19.5574L9.44108 18.1104C10.5154 18.3413 11.6283 18.3245 12.6951 18.0613L13.8405 19.4692C15.0302 19.0626 16.12 18.4079 17.0375 17.5483L16.3321 15.876C17.0654 15.0576 17.6027 14.0829 17.9031 13.0259L19.6949 12.7382C19.9396 11.5049 19.9203 10.2337 19.6384 9.00827L17.8291 8.77918C17.4946 7.73265 16.9211 6.77831 16.1541 5.99166L16.8023 4.29248C15.8544 3.46841 14.7427 2.85442 13.5404 2.49103Z" stroke="currentColor" strokeWidth="2" strokeMiterlimit="10" />
-            </svg>
-            {t("sidebar.system")}
-          </button>
-          <button className="sidebar-footer-btn new-chat-btn" onClick={handleNewChat}>
-            + {t("chat.newChat")}
-          </button>
-          <UpdateButton />
         </div>
       </div>
       {deletingChatId && (

@@ -4,6 +4,7 @@ import "./index.css"
 import "./styles/index.scss"
 import App from "./App.tsx"
 import "./i18n"
+import { HeroUIProvider } from "@heroui/react";
 
 if (window.electron.ipcRenderer) {
   const originalFetch = window.fetch
@@ -21,7 +22,7 @@ if (window.electron.ipcRenderer) {
 }
 
 window.addEventListener('contextmenu', (e) => {
-  e.preventDefault()
+  // e.preventDefault()
   const selection = window.getSelection()?.toString()
 
   if (selection) {
@@ -31,6 +32,8 @@ window.addEventListener('contextmenu', (e) => {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <HeroUIProvider className="h-full w-full">
+      <App />
+    </HeroUIProvider>
   </StrictMode>,
 )

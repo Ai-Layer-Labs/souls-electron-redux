@@ -22,7 +22,7 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
   const tempIdRef = useRef<string>(Date.now().toString());
   const previousChatIdRef = useRef<string | null>(null);
   const forceNewCanvasRef = useRef<boolean>(false);
-  
+
   // Set persistence key when chat ID changes
   useEffect(() => {
     // Check if we switched to a new chat or cleared the chat ID (new chat)
@@ -34,23 +34,23 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
         tempIdRef.current = Date.now().toString();
         console.log("New chat detected, creating fresh canvas with ID:", tempIdRef.current);
       }
-      
+
       previousChatIdRef.current = currentChatId;
     }
-    
+
     // For a chat with ID, use that ID for persistence
     // For a new chat without ID, use a unique temporary key
-    const key = currentChatId 
-      ? `tldraw-chat-${currentChatId}` 
+    const key = currentChatId
+      ? `tldraw-chat-${currentChatId}`
       : `tldraw-temp-${tempIdRef.current}`;
-    
+
     setPersistenceKey(key);
-    
+
     // Force a remount of the Tldraw component by changing the key
     if (editorRef.current) {
       console.log('Chat ID changed, canvas will be remounted:', currentChatId || 'new chat');
     }
-  }, [currentChatId]); 
+  }, [currentChatId]);
 
   // Handle dropped text when contentData changes
   useEffect(() => {
@@ -154,8 +154,8 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
   // Generate a unique key for both the component and the persistence to ensure proper remounting
   // For existing chats, use the chat ID
   // For new chats, use a unique temporary ID that changes each time a new chat is created
-  const tldrawKey = currentChatId 
-    ? `chat-${currentChatId}` 
+  const tldrawKey = currentChatId
+    ? `chat-${currentChatId}`
     : `new-chat-${tempIdRef.current}-${forceNewCanvasRef.current ? 'fresh' : 'existing'}`;
 
   return (
@@ -165,6 +165,7 @@ const InfiniteCanvasComponent: React.FC<InfiniteCanvasComponentProps> = (/*{ dat
         persistenceKey={persistenceKey} // Let tldraw handle load/save via this key
         onMount={handleMount}
         autoFocus
+        inferDarkMode
       />
     </div>
   );

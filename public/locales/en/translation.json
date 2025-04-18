@@ -64,11 +64,24 @@
     "settings": "Model Settings",
     "update": "Update available",
     "models": "Model Settings",
-    "system": "System Settings"
+    "system": "System Settings",
+    "collapse": "Collapse",
+    "expand": "Expand"
+  },
+  "personas": {
+    "title": "Personas",
+    "placeholder": "Persona management features coming soon!"
+  },
+  "storage": {
+    "title": "Storage",
+    "placeholder": "Storage management features (vector stores, documents) coming soon!"
+  },
+  "settings": {
+    "title": "Settings"
   },
   "tools": {
     "title": "Tools",
-    "subtitle": "Tools and settings for MCP Server",
+    "subtitle": "Manage available tools and their configurations",
     "editConfig": "Edit Config",
     "editConfig.alt": "Edit MCP Server Configuration",
     "configTitle": "MCP Server Configuration",

@@ -3,13 +3,16 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 import ChatMessages, { Message } from "./ChatMessages"
 import ChatInput from "./ChatInput"
 import SidePanel from './SidePanel';
-import { useAtom, useSetAtom } from 'jotai'
+import { useAtom, useSetAtom, useAtomValue } from 'jotai'
 import { codeStreamingAtom } from '../../atoms/codeStreaming'
+import { useUIStore } from '../../stores/uiStore';
 import useHotkeyEvent from "../../hooks/useHotkeyEvent"
 import { showToastAtom } from "../../atoms/toastState"
 import { useTranslation } from "react-i18next"
 import { currentChatIdAtom, isChatStreamingAtom, lastMessageAtom } from "../../atoms/chatState"
 import { safeBase64Encode } from "../../util"
+import { isConfigNotInitializedAtom } from "../../atoms/configState"
+import Header from "../../components/Header"
 
 interface ToolCall {
   name: string
@@ -23,10 +26,11 @@ interface ToolResult {
 
 
 const ChatWindow = () => {
+  const isConfigNotInitialized = useAtomValue(isConfigNotInitializedAtom)
   const { chatId } = useParams()
   const location = useLocation()
   const [messages, setMessages] = useState<Message[]>([])
-  const [isPanelOpen, setIsPanelOpen] = useState(true)
+  const { isPanelOpen, togglePanel } = useUIStore();
   const currentId = useRef(0)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const currentChatId = useRef<string | null>(null)
@@ -91,11 +95,6 @@ const ChatWindow = () => {
     if (chatId && chatId !== currentChatId.current) {
       loadChat(chatId)
       setCurrentChatId(chatId)
-      
-      if (isNewChat.current) {
-        setIsPanelOpen(true)
-        isNewChat.current = false
-      }
     }
   }, [chatId, loadChat, setCurrentChatId])
 
@@ -126,11 +125,6 @@ const ChatWindow = () => {
 
   const onSendMsg = useCallback(async (msg: string, files?: FileList) => {
     if (isChatStreaming) return
-
-    // For a new chat, make sure to open the panel to show the fresh canvas
-    if (!currentChatId.current) {
-      setIsPanelOpen(true);
-    }
 
     const formData = new FormData()
     if (msg)
@@ -440,39 +434,30 @@ const ChatWindow = () => {
     lastChatId.current = chatId
   }, [updateStreamingCode, chatId])
 
-  const togglePanel = () => {
-    setIsPanelOpen(!isPanelOpen)
-  }
-
   return (
-    <div className={`flex h-screen w-full overflow-x-hidden ${isPanelOpen ? 'panel-open' : ''}`}>
-      <button
-        className="fixed right-[15px] flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300 bg-gray-100 text-base shadow-md cursor-pointer z-[1001] transition-colors dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600"
-        onClick={togglePanel}
-        title={isPanelOpen ? "Hide Canvas" : "Show Canvas"}
-      >
-        {isPanelOpen ? '>' : '<'}
-      </button>
-
-      <div className="flex-grow h-full flex flex-col">
-        <div className="chat-window">
-          <ChatMessages
-            messages={messages}
-            isLoading={isChatStreaming}
-            onRetry={onRetry}
-            onEdit={onEdit}
-          />
-          <ChatInput
-            onSendMessage={onSendMsg}
-            disabled={isChatStreaming}
-            onAbort={onAbort}
-          />
+    <div className="h-full w-full relative">
+      {!isConfigNotInitialized && <Header showModelSelect />}
+      <div className={`flex h-screen w-full overflow-x-hidden ${isPanelOpen ? 'panel-open' : ''}`}>
+        <div className="flex-grow h-full flex flex-col">
+          <div className="chat-window">
+            <ChatMessages
+              messages={messages}
+              isLoading={isChatStreaming}
+              onRetry={onRetry}
+              onEdit={onEdit}
+            />
+            <ChatInput
+              onSendMessage={onSendMsg}
+              disabled={isChatStreaming}
+              onAbort={onAbort}
+            />
+          </div>
         </div>
-      </div>
 
-      {chatId && (
-        <SidePanel chatId={chatId} isOpen={isPanelOpen} onClose={togglePanel} />
-      )}
+        {chatId && (
+          <SidePanel chatId={chatId} isOpen={isPanelOpen} onClose={togglePanel} />
+        )}
+      </div>
     </div>
   )
 }

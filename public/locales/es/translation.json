@@ -60,7 +60,8 @@
     "settings": "Configuración del Modelo",
     "update": "Actualización disponible",
     "models": "Configuración del Modelo",
-    "system": "Configuración del Sistema"
+    "system": "Configuración del Sistema",
+    "collapse": "Colapsar"
   },
   "tools": {
     "title": "Gestión de Herramientas (MCP)",

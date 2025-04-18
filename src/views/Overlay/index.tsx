@@ -1,10 +1,10 @@
 import React from "react"
 import PopupWindow from "../../components/PopupWindow"
-import Tools from "./Tools"
 import Model from "./Model"
 import System from "./System"
 import { useAtomValue } from "jotai"
 import { overlaysAtom } from "../../atoms/layerState"
+import { KnowledgeBase } from "../../components/KnowledgeBase"
 
 const Overlay = () => {
   const overlays = useAtomValue(overlaysAtom)
@@ -16,12 +16,6 @@ const Overlay = () => {
     <>
       {overlays.map((overlay, index) => {
         switch (overlay) {
-          case "Tools":
-            return (
-              <PopupWindow key={`tools-${index}`} overlay>
-                <Tools />
-              </PopupWindow>
-            )
           case "Model":
             return (
               <PopupWindow key={`model-${index}`} overlay>
@@ -34,7 +28,14 @@ const Overlay = () => {
                 <System />
               </PopupWindow>
             )
+          case "Knowledge":
+            return (
+              <PopupWindow key={`knowledge-${index}`} overlay>
+                <KnowledgeBase />
+              </PopupWindow>
+            )
           default:
+            console.warn("Unhandled overlay type:", overlay)
             return null
         }
       })}
